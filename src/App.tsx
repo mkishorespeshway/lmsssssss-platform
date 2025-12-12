@@ -9,9 +9,9 @@ import CourseDetail from "./pages/CourseDetail";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import StudentDashboard from "./pages/StudentDashboard";
+import StudentProfile from "./pages/StudentProfile";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminCourses from "./pages/AdminCourses";
-import AdminUsers from "./pages/AdminUsers";
 import AdminNewCourse from "./pages/AdminNewCourse";
 import LessonPlayer from "./pages/LessonPlayer";
 import Quiz from "./pages/Quiz";
@@ -59,10 +59,10 @@ const App = () => (
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/dashboard" element={<StudentDashboard />} />
+          <Route path="/profile" element={<StudentProfile />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/courses" element={<AdminCourses />} />
           <Route path="/admin/courses/new" element={<AdminNewCourse />} />
-          <Route path="/admin/users" element={<AdminUsers />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
