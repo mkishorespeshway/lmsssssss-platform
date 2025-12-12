@@ -34,71 +34,38 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 
-// Mock analytics data
 const analyticsData = {
-  totalStudents: 12450,
-  studentGrowth: 12.5,
-  totalCourses: 156,
-  courseGrowth: 8.2,
-  totalRevenue: 245680,
-  revenueGrowth: 18.3,
-  totalEnrollments: 28340,
-  enrollmentGrowth: 15.7,
+  totalStudents: 0,
+  studentGrowth: 0,
+  totalCourses: 0,
+  courseGrowth: 0,
+  totalRevenue: 0,
+  revenueGrowth: 0,
+  totalEnrollments: 0,
+  enrollmentGrowth: 0,
 };
 
-// Mock recent enrollments
-const recentEnrollments = [
-  {
-    id: "1",
-    student: { name: "John Smith", email: "john@example.com", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face" },
-    course: "Complete Web Development Bootcamp",
-    date: "2 hours ago",
-    amount: 89,
-  },
-  {
-    id: "2",
-    student: { name: "Emma Wilson", email: "emma@example.com", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=40&h=40&fit=crop&crop=face" },
-    course: "Data Science & Machine Learning",
-    date: "4 hours ago",
-    amount: 129,
-  },
-  {
-    id: "3",
-    student: { name: "Michael Brown", email: "michael@example.com", avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face" },
-    course: "UI/UX Design Masterclass",
-    date: "6 hours ago",
-    amount: 79,
-  },
-  {
-    id: "4",
-    student: { name: "Sarah Davis", email: "sarah@example.com", avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=40&h=40&fit=crop&crop=face" },
-    course: "Advanced React & TypeScript",
-    date: "8 hours ago",
-    amount: 99,
-  },
-];
+const recentEnrollments: Array<{
+  id: string;
+  student: { name: string; email: string; avatar: string };
+  course: string;
+  date: string;
+  amount: number;
+}> = [];
 
-// Mock top courses
-const topCourses = [
-  { id: "1", title: "Complete Web Development Bootcamp", enrollments: 4523, revenue: 402547, rating: 4.9 },
-  { id: "2", title: "Data Science & Machine Learning", enrollments: 3215, revenue: 414735, rating: 4.8 },
-  { id: "3", title: "UI/UX Design Masterclass", enrollments: 2845, revenue: 224755, rating: 4.9 },
-  { id: "4", title: "Advanced React & TypeScript", enrollments: 1892, revenue: 187308, rating: 4.7 },
-];
+const topCourses: Array<{
+  id: string;
+  title: string;
+  enrollments: number;
+  revenue: number;
+  rating: number;
+}> = [];
 
-// Chart data (simplified)
-const weeklyEnrollments = [
-  { day: "Mon", count: 120 },
-  { day: "Tue", count: 145 },
-  { day: "Wed", count: 132 },
-  { day: "Thu", count: 178 },
-  { day: "Fri", count: 156 },
-  { day: "Sat", count: 89 },
-  { day: "Sun", count: 76 },
-];
+const weeklyEnrollments: Array<{ day: string; count: number }> = [];
+const recentActivity: Array<{ id: string; title: string; time: string; tone?: "success" | "primary" | "warning" }> = [];
 
 const AdminDashboard = () => {
-  const maxEnrollment = Math.max(...weeklyEnrollments.map((d) => d.count));
+  const maxEnrollment = weeklyEnrollments.length ? Math.max(...weeklyEnrollments.map((d) => d.count)) : 0;
 
   return (
     <div className="min-h-screen bg-background">
@@ -242,24 +209,29 @@ const AdminDashboard = () => {
                     </Button>
                   </div>
                   
-                  {/* Simple Bar Chart */}
-                  <div className="flex items-end justify-between h-48 gap-2">
-                    {weeklyEnrollments.map((data, index) => (
-                      <div key={data.day} className="flex flex-col items-center flex-1">
-                        <motion.div
-                          initial={{ height: 0 }}
-                          animate={{ height: `${(data.count / maxEnrollment) * 100}%` }}
-                          transition={{ duration: 0.5, delay: 0.3 + index * 0.1 }}
-                          className="w-full bg-primary/80 rounded-t-md min-h-[20px] relative group cursor-pointer hover:bg-primary transition-colors"
-                        >
-                          <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-foreground text-background text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                            {data.count} enrollments
-                          </div>
-                        </motion.div>
-                        <span className="text-xs text-muted-foreground mt-2">{data.day}</span>
-                      </div>
-                    ))}
-                  </div>
+                  {weeklyEnrollments.length === 0 ? (
+                    <div className="h-48 flex items-center justify-center text-sm text-muted-foreground">
+                      No enrollment data
+                    </div>
+                  ) : (
+                    <div className="flex items-end justify-between h-48 gap-2">
+                      {weeklyEnrollments.map((data, index) => (
+                        <div key={data.day} className="flex flex-col items-center flex-1">
+                          <motion.div
+                            initial={{ height: 0 }}
+                            animate={{ height: `${(data.count / maxEnrollment) * 100}%` }}
+                            transition={{ duration: 0.5, delay: 0.3 + index * 0.1 }}
+                            className="w-full bg-primary/80 rounded-t-md min-h-[20px] relative group cursor-pointer hover:bg-primary transition-colors"
+                          >
+                            <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-foreground text-background text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                              {data.count} enrollments
+                            </div>
+                          </motion.div>
+                          <span className="text-xs text-muted-foreground mt-2">{data.day}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </Card>
               </motion.div>
 
@@ -280,36 +252,40 @@ const AdminDashboard = () => {
                   </div>
 
                   <div className="space-y-4">
-                    {recentEnrollments.map((enrollment) => (
-                      <div
-                        key={enrollment.id}
-                        className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 transition-colors"
-                      >
-                        <div className="flex items-center gap-3">
-                          <img
-                            src={enrollment.student.avatar}
-                            alt={enrollment.student.name}
-                            className="w-10 h-10 rounded-full object-cover"
-                          />
-                          <div>
+                    {recentEnrollments.length === 0 ? (
+                      <p className="text-sm text-muted-foreground">No recent enrollments</p>
+                    ) : (
+                      recentEnrollments.map((enrollment) => (
+                        <div
+                          key={enrollment.id}
+                          className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 transition-colors"
+                        >
+                          <div className="flex items-center gap-3">
+                            <img
+                              src={enrollment.student.avatar}
+                              alt={enrollment.student.name}
+                              className="w-10 h-10 rounded-full object-cover"
+                            />
+                            <div>
+                              <p className="font-medium text-foreground text-sm">
+                                {enrollment.student.name}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {enrollment.course}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="text-right">
                             <p className="font-medium text-foreground text-sm">
-                              {enrollment.student.name}
+                              ${enrollment.amount}
                             </p>
                             <p className="text-xs text-muted-foreground">
-                              {enrollment.course}
+                              {enrollment.date}
                             </p>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <p className="font-medium text-foreground text-sm">
-                            ${enrollment.amount}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {enrollment.date}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
+                      ))
+                    )}
                   </div>
                 </Card>
               </motion.div>
@@ -333,23 +309,27 @@ const AdminDashboard = () => {
                     </Button>
                   </div>
                   <div className="space-y-4">
-                    {topCourses.map((course, index) => (
-                      <div key={course.id} className="flex items-start gap-3">
-                        <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-semibold">
-                          {index + 1}
-                        </span>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-sm text-foreground line-clamp-1">
-                            {course.title}
-                          </p>
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                            <span>{course.enrollments.toLocaleString()} enrolled</span>
-                            <span>•</span>
-                            <span>${course.revenue.toLocaleString()}</span>
+                    {topCourses.length === 0 ? (
+                      <p className="text-sm text-muted-foreground">No top courses</p>
+                    ) : (
+                      topCourses.map((course, index) => (
+                        <div key={course.id} className="flex items-start gap-3">
+                          <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-semibold">
+                            {index + 1}
+                          </span>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-sm text-foreground line-clamp-1">
+                              {course.title}
+                            </p>
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <span>{course.enrollments.toLocaleString()} enrolled</span>
+                              <span>•</span>
+                              <span>${course.revenue.toLocaleString()}</span>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      ))
+                    )}
                   </div>
                 </Card>
               </motion.div>
@@ -370,21 +350,21 @@ const AdminDashboard = () => {
                         <Award className="h-4 w-4 text-warning" />
                         <span className="text-sm text-muted-foreground">Certificates Issued</span>
                       </div>
-                      <span className="font-semibold text-foreground">8,432</span>
+                      <span className="font-semibold text-foreground">0</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <FileText className="h-4 w-4 text-primary" />
                         <span className="text-sm text-muted-foreground">Quizzes Completed</span>
                       </div>
-                      <span className="font-semibold text-foreground">24,156</span>
+                      <span className="font-semibold text-foreground">0</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <Calendar className="h-4 w-4 text-success" />
                         <span className="text-sm text-muted-foreground">Active Today</span>
                       </div>
-                      <span className="font-semibold text-foreground">1,234</span>
+                      <span className="font-semibold text-foreground">0</span>
                     </div>
                   </div>
                 </Card>
@@ -401,27 +381,21 @@ const AdminDashboard = () => {
                     Recent Activity
                   </h3>
                   <div className="space-y-3 text-sm">
-                    <div className="flex gap-3">
-                      <div className="w-2 h-2 rounded-full bg-success mt-1.5" />
-                      <div>
-                        <p className="text-foreground">New course published</p>
-                        <p className="text-xs text-muted-foreground">5 minutes ago</p>
-                      </div>
-                    </div>
-                    <div className="flex gap-3">
-                      <div className="w-2 h-2 rounded-full bg-primary mt-1.5" />
-                      <div>
-                        <p className="text-foreground">25 new enrollments</p>
-                        <p className="text-xs text-muted-foreground">1 hour ago</p>
-                      </div>
-                    </div>
-                    <div className="flex gap-3">
-                      <div className="w-2 h-2 rounded-full bg-warning mt-1.5" />
-                      <div>
-                        <p className="text-foreground">Quiz graded automatically</p>
-                        <p className="text-xs text-muted-foreground">2 hours ago</p>
-                      </div>
-                    </div>
+                    {recentActivity.length === 0 ? (
+                      <p className="text-sm text-muted-foreground">No recent activity</p>
+                    ) : (
+                      recentActivity.map((item) => (
+                        <div key={item.id} className="flex gap-3">
+                          <div className={`w-2 h-2 rounded-full mt-1.5 ${
+                            item.tone === "success" ? "bg-success" : item.tone === "warning" ? "bg-warning" : "bg-primary"
+                          }`} />
+                          <div>
+                            <p className="text-foreground">{item.title}</p>
+                            <p className="text-xs text-muted-foreground">{item.time}</p>
+                          </div>
+                        </div>
+                      ))
+                    )}
                   </div>
                 </Card>
               </motion.div>

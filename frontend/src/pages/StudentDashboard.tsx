@@ -18,77 +18,41 @@ import {
   Target,
   CheckCircle2,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { motion } from "framer-motion";
 
-// Mock data for enrolled courses
-const enrolledCourses = [
-  {
-    id: "1",
-    title: "Complete Web Development Bootcamp",
-    thumbnail: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&h=225&fit=crop",
-    instructor: "Sarah Johnson",
-    progress: 65,
-    lastLesson: "CSS Grid Mastery",
-    nextLesson: "JavaScript Essentials",
-    totalLessons: 156,
-    completedLessons: 101,
-  },
-  {
-    id: "2",
-    title: "Data Science & Machine Learning",
-    thumbnail: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=225&fit=crop",
-    instructor: "Dr. Michael Chen",
-    progress: 32,
-    lastLesson: "Data Visualization",
-    nextLesson: "Introduction to ML",
-    totalLessons: 180,
-    completedLessons: 58,
-  },
-  {
-    id: "3",
-    title: "UI/UX Design Masterclass",
-    thumbnail: "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=400&h=225&fit=crop",
-    instructor: "Emma Williams",
-    progress: 100,
-    lastLesson: "Final Project",
-    nextLesson: null,
-    totalLessons: 98,
-    completedLessons: 98,
-  },
-];
+const enrolledCourses: Array<{
+  id: string;
+  title: string;
+  thumbnail: string;
+  instructor: string;
+  progress: number;
+  lastLesson: string | null;
+  nextLesson: string | null;
+  totalLessons: number;
+  completedLessons: number;
+}> = [];
 
-// Mock achievements
-const achievements = [
-  { id: "1", title: "Fast Learner", description: "Complete 10 lessons in one day", icon: TrendingUp, earned: true },
-  { id: "2", title: "First Certificate", description: "Earn your first certificate", icon: Award, earned: true },
-  { id: "3", title: "Dedicated Student", description: "Log in for 7 consecutive days", icon: Calendar, earned: false },
-];
+const achievements: Array<{
+  id: string;
+  title: string;
+  description: string;
+  icon: LucideIcon;
+  earned: boolean;
+}> = [];
 
-// Mock announcements
-const announcements = [
-  {
-    id: "1",
-    title: "New Course: Advanced TypeScript",
-    message: "Master advanced TypeScript patterns and techniques.",
-    date: "2 hours ago",
-  },
-  {
-    id: "2",
-    title: "Weekly Challenge",
-    message: "Complete 5 lessons this week to earn bonus points.",
-    date: "1 day ago",
-  },
-];
+const announcements: Array<{
+  id: string;
+  title: string;
+  message: string;
+  date: string;
+}> = [];
 
 const StudentDashboard = () => {
-  const user = {
-    name: "Alex Thompson",
-    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face",
-    coursesEnrolled: 5,
-    coursesCompleted: 2,
-    certificatesEarned: 2,
-    totalHoursLearned: 124,
-  };
+  const coursesEnrolled = 0;
+  const coursesCompleted = 0;
+  const certificatesEarned = 0;
+  const totalHoursLearned = 0;
 
   return (
     <div className="min-h-screen bg-background">
@@ -106,7 +70,7 @@ const StudentDashboard = () => {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
                 <h1 className="font-heading text-2xl sm:text-3xl font-bold text-foreground mb-1">
-                  Welcome back, {user.name}!
+                  Welcome back!
                 </h1>
                 <p className="text-muted-foreground">
                   Continue where you left off and keep learning.
@@ -134,7 +98,7 @@ const StudentDashboard = () => {
                   <BookOpen className="h-6 w-6 text-primary" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-foreground">{user.coursesEnrolled}</p>
+                  <p className="text-2xl font-bold text-foreground">{coursesEnrolled}</p>
                   <p className="text-sm text-muted-foreground">Enrolled</p>
                 </div>
               </div>
@@ -145,7 +109,7 @@ const StudentDashboard = () => {
                   <CheckCircle2 className="h-6 w-6 text-success" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-foreground">{user.coursesCompleted}</p>
+                  <p className="text-2xl font-bold text-foreground">{coursesCompleted}</p>
                   <p className="text-sm text-muted-foreground">Completed</p>
                 </div>
               </div>
@@ -156,7 +120,7 @@ const StudentDashboard = () => {
                   <Award className="h-6 w-6 text-warning" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-foreground">{user.certificatesEarned}</p>
+                  <p className="text-2xl font-bold text-foreground">{certificatesEarned}</p>
                   <p className="text-sm text-muted-foreground">Certificates</p>
                 </div>
               </div>
@@ -167,7 +131,7 @@ const StudentDashboard = () => {
                   <Clock className="h-6 w-6 text-accent" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-foreground">{user.totalHoursLearned}h</p>
+                  <p className="text-2xl font-bold text-foreground">{totalHoursLearned}h</p>
                   <p className="text-sm text-muted-foreground">Learning Time</p>
                 </div>
               </div>
@@ -193,45 +157,49 @@ const StudentDashboard = () => {
                 </div>
 
                 <div className="space-y-4">
-                  {enrolledCourses.filter((c) => c.progress < 100).map((course) => (
-                    <Card key={course.id} variant="interactive" className="p-4">
-                      <div className="flex gap-4">
-                        <img
-                          src={course.thumbnail}
-                          alt={course.title}
-                          className="w-32 h-20 object-cover rounded-lg hidden sm:block"
-                        />
-                        <div className="flex-1">
-                          <div className="flex items-start justify-between gap-4">
-                            <div>
-                              <h3 className="font-semibold text-foreground mb-1 line-clamp-1">
-                                {course.title}
-                              </h3>
-                              <p className="text-sm text-muted-foreground mb-2">
-                                By {course.instructor}
-                              </p>
-                              <p className="text-xs text-muted-foreground">
-                                Next: {course.nextLesson}
-                              </p>
+                  {enrolledCourses.filter((c) => c.progress < 100).length === 0 ? (
+                    <p className="text-sm text-muted-foreground">No courses in progress</p>
+                  ) : (
+                    enrolledCourses.filter((c) => c.progress < 100).map((course) => (
+                      <Card key={course.id} variant="interactive" className="p-4">
+                        <div className="flex gap-4">
+                          <img
+                            src={course.thumbnail}
+                            alt={course.title}
+                            className="w-32 h-20 object-cover rounded-lg hidden sm:block"
+                          />
+                          <div className="flex-1">
+                            <div className="flex items-start justify-between gap-4">
+                              <div>
+                                <h3 className="font-semibold text-foreground mb-1 line-clamp-1">
+                                  {course.title}
+                                </h3>
+                                <p className="text-sm text-muted-foreground mb-2">
+                                  By {course.instructor}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  Next: {course.nextLesson}
+                                </p>
+                              </div>
+                              <Button variant="default" size="sm" asChild>
+                                <Link to={`/courses/${course.id}/learn`}>
+                                  <Play className="h-4 w-4" />
+                                  Continue
+                                </Link>
+                              </Button>
                             </div>
-                            <Button variant="default" size="sm" asChild>
-                              <Link to={`/courses/${course.id}/learn`}>
-                                <Play className="h-4 w-4" />
-                                Continue
-                              </Link>
-                            </Button>
-                          </div>
-                          <div className="mt-3">
-                            <div className="flex justify-between text-xs text-muted-foreground mb-1">
-                              <span>{course.completedLessons} / {course.totalLessons} lessons</span>
-                              <span>{course.progress}%</span>
+                            <div className="mt-3">
+                              <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                                <span>{course.completedLessons} / {course.totalLessons} lessons</span>
+                                <span>{course.progress}%</span>
+                              </div>
+                              <Progress value={course.progress} className="h-2" />
                             </div>
-                            <Progress value={course.progress} className="h-2" />
                           </div>
                         </div>
-                      </div>
-                    </Card>
-                  ))}
+                      </Card>
+                    ))
+                  )}
                 </div>
               </motion.div>
 
@@ -246,36 +214,40 @@ const StudentDashboard = () => {
                 </h2>
 
                 <div className="space-y-4">
-                  {enrolledCourses.filter((c) => c.progress === 100).map((course) => (
-                    <Card key={course.id} variant="elevated" className="p-4">
-                      <div className="flex gap-4">
-                        <img
-                          src={course.thumbnail}
-                          alt={course.title}
-                          className="w-32 h-20 object-cover rounded-lg hidden sm:block"
-                        />
-                        <div className="flex-1">
-                          <div className="flex items-start justify-between gap-4">
-                            <div>
-                              <div className="flex items-center gap-2 mb-1">
-                                <h3 className="font-semibold text-foreground line-clamp-1">
-                                  {course.title}
-                                </h3>
-                                <Badge variant="success">Completed</Badge>
+                  {enrolledCourses.filter((c) => c.progress === 100).length === 0 ? (
+                    <p className="text-sm text-muted-foreground">No completed courses yet</p>
+                  ) : (
+                    enrolledCourses.filter((c) => c.progress === 100).map((course) => (
+                      <Card key={course.id} variant="elevated" className="p-4">
+                        <div className="flex gap-4">
+                          <img
+                            src={course.thumbnail}
+                            alt={course.title}
+                            className="w-32 h-20 object-cover rounded-lg hidden sm:block"
+                          />
+                          <div className="flex-1">
+                            <div className="flex items-start justify-between gap-4">
+                              <div>
+                                <div className="flex items-center gap-2 mb-1">
+                                  <h3 className="font-semibold text-foreground line-clamp-1">
+                                    {course.title}
+                                  </h3>
+                                  <Badge variant="success">Completed</Badge>
+                                </div>
+                                <p className="text-sm text-muted-foreground">
+                                  By {course.instructor}
+                                </p>
                               </div>
-                              <p className="text-sm text-muted-foreground">
-                                By {course.instructor}
-                              </p>
+                              <Button variant="outline" size="sm">
+                                <Award className="h-4 w-4" />
+                                Certificate
+                              </Button>
                             </div>
-                            <Button variant="outline" size="sm">
-                              <Award className="h-4 w-4" />
-                              Certificate
-                            </Button>
                           </div>
                         </div>
-                      </div>
-                    </Card>
-                  ))}
+                      </Card>
+                    ))
+                  )}
                 </div>
               </motion.div>
             </div>
@@ -296,19 +268,23 @@ const StudentDashboard = () => {
                     </h3>
                   </div>
                   <div className="space-y-4">
-                    {announcements.map((announcement) => (
-                      <div key={announcement.id} className="pb-4 border-b border-border last:border-0 last:pb-0">
-                        <h4 className="font-medium text-foreground text-sm mb-1">
-                          {announcement.title}
-                        </h4>
-                        <p className="text-xs text-muted-foreground mb-1">
-                          {announcement.message}
-                        </p>
-                        <span className="text-xs text-muted-foreground">
-                          {announcement.date}
-                        </span>
-                      </div>
-                    ))}
+                    {announcements.length === 0 ? (
+                      <p className="text-sm text-muted-foreground">No announcements</p>
+                    ) : (
+                      announcements.map((announcement) => (
+                        <div key={announcement.id} className="pb-4 border-b border-border last:border-0 last:pb-0">
+                          <h4 className="font-medium text-foreground text-sm mb-1">
+                            {announcement.title}
+                          </h4>
+                          <p className="text-xs text-muted-foreground mb-1">
+                            {announcement.message}
+                          </p>
+                          <span className="text-xs text-muted-foreground">
+                            {announcement.date}
+                          </span>
+                        </div>
+                      ))
+                    )}
                   </div>
                 </Card>
               </motion.div>
@@ -327,32 +303,36 @@ const StudentDashboard = () => {
                     </h3>
                   </div>
                   <div className="space-y-4">
-                    {achievements.map((achievement) => (
-                      <div
-                        key={achievement.id}
-                        className={`flex items-center gap-3 ${
-                          !achievement.earned ? "opacity-50" : ""
-                        }`}
-                      >
+                    {achievements.length === 0 ? (
+                      <p className="text-sm text-muted-foreground">No achievements yet</p>
+                    ) : (
+                      achievements.map((achievement) => (
                         <div
-                          className={`p-2 rounded-lg ${
-                            achievement.earned
-                              ? "bg-warning/10 text-warning"
-                              : "bg-muted text-muted-foreground"
+                          key={achievement.id}
+                          className={`flex items-center gap-3 ${
+                            !achievement.earned ? "opacity-50" : ""
                           }`}
                         >
-                          <achievement.icon className="h-5 w-5" />
+                          <div
+                            className={`p-2 rounded-lg ${
+                              achievement.earned
+                                ? "bg-warning/10 text-warning"
+                                : "bg-muted text-muted-foreground"
+                            }`}
+                          >
+                            <achievement.icon className="h-5 w-5" />
+                          </div>
+                          <div>
+                            <p className="font-medium text-sm text-foreground">
+                              {achievement.title}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {achievement.description}
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-medium text-sm text-foreground">
-                            {achievement.title}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {achievement.description}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
+                      ))
+                    )}
                   </div>
                 </Card>
               </motion.div>

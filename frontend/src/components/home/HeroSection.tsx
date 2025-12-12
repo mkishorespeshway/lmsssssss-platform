@@ -106,21 +106,21 @@ export function HeroSection() {
               <div className="text-center lg:text-left">
                 <div className="flex items-center justify-center lg:justify-start gap-2 text-primary mb-1">
                   <BookOpen className="h-5 w-5" />
-                  <span className="text-2xl sm:text-3xl font-bold text-white">500+</span>
+                  <span className="text-2xl sm:text-3xl font-bold text-white">0</span>
                 </div>
                 <p className="text-sm text-white/60">Courses Available</p>
               </div>
               <div className="text-center lg:text-left">
                 <div className="flex items-center justify-center lg:justify-start gap-2 text-primary mb-1">
                   <Users className="h-5 w-5" />
-                  <span className="text-2xl sm:text-3xl font-bold text-white">50K+</span>
+                  <span className="text-2xl sm:text-3xl font-bold text-white">0</span>
                 </div>
                 <p className="text-sm text-white/60">Active Learners</p>
               </div>
               <div className="text-center lg:text-left">
                 <div className="flex items-center justify-center lg:justify-start gap-2 text-primary mb-1">
                   <Award className="h-5 w-5" />
-                  <span className="text-2xl sm:text-3xl font-bold text-white">10K+</span>
+                  <span className="text-2xl sm:text-3xl font-bold text-white">0</span>
                 </div>
                 <p className="text-sm text-white/60">Certificates Issued</p>
               </div>
@@ -150,18 +150,18 @@ export function HeroSection() {
                 
                 {/* Course Info */}
                 <div className="space-y-3">
-                  <Badge variant="secondary">Web Development</Badge>
+                  <Badge variant="secondary">Course</Badge>
                   <h3 className="font-heading font-semibold text-lg text-foreground">
-                    Complete Full-Stack Development Course
+                    Course Preview
                   </h3>
                   <div className="flex items-center gap-4 text-sm text-muted-foreground">
                     <span className="flex items-center gap-1">
                       <BookOpen className="h-4 w-4" />
-                      48 lessons
+                      0 lessons
                     </span>
                     <span className="flex items-center gap-1">
                       <Users className="h-4 w-4" />
-                      12.5k enrolled
+                      0 enrolled
                     </span>
                   </div>
                   
@@ -169,53 +169,16 @@ export function HeroSection() {
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Progress</span>
-                      <span className="font-medium text-primary">65%</span>
+                      <span className="font-medium text-primary">0%</span>
                     </div>
                     <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                      <div className="h-full w-[65%] bg-primary rounded-full progress-animate" />
+                      <div className="h-full w-[0%] bg-primary rounded-full" />
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Floating Badge - Certificate */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.4, delay: 0.8 }}
-                className="absolute -bottom-6 -left-6 bg-card rounded-xl border border-border shadow-lg p-4 flex items-center gap-3"
-              >
-                <div className="w-10 h-10 bg-success/10 rounded-lg flex items-center justify-center">
-                  <Award className="h-5 w-5 text-success" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-foreground">Certificate Earned!</p>
-                  <p className="text-xs text-muted-foreground">React Fundamentals</p>
-                </div>
-              </motion.div>
-
-              {/* Floating Badge - Students */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.4, delay: 1 }}
-                className="absolute -top-6 -right-6 bg-card rounded-xl border border-border shadow-lg p-4"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="flex -space-x-2">
-                    {[1, 2, 3, 4].map((i) => (
-                      <div
-                        key={i}
-                        className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-accent border-2 border-card"
-                      />
-                    ))}
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-foreground">+2.5k</p>
-                    <p className="text-xs text-muted-foreground">This week</p>
-                  </div>
-                </div>
-              </motion.div>
+              {/* Floating badges removed to avoid displaying dummy counts */}
             </div>
           </motion.div>
         </div>
