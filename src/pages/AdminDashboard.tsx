@@ -151,9 +151,9 @@ const AdminDashboard = () => {
               </Link>
             </Button>
             <Button variant="secondary" size="sm" asChild>
-              <Link to="/admin/users">
+              <Link to="/admin/enrollments">
                 <Users className="h-4 w-4" />
-                Manage Users
+                View Enrollments
               </Link>
             </Button>
             <Button variant="secondary" size="sm" asChild>
