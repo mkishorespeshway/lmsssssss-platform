@@ -1,0 +1,18 @@
+import { Router } from "express";
+import courses from "./courses.routes.js";
+import categories from "./categories.routes.js";
+import instructors from "./instructors.routes.js";
+import plans from "./plans.routes.js";
+import announcements from "./announcements.routes.js";
+import achievements from "./achievements.routes.js";
+import analytics from "./analytics.routes.js";
+
+const router = Router();
+router.use("/courses", courses);
+router.use("/categories", categories);
+router.use("/instructors", instructors);
+router.use("/plans", plans);
+router.use("/announcements", announcements);
+router.use("/achievements", achievements);
+router.use("/analytics", analytics);
+export default router;
