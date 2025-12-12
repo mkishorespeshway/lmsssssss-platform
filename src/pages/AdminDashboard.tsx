@@ -153,19 +153,7 @@ const AdminDashboard = () => {
             <Button variant="secondary" size="sm" asChild>
               <Link to="/admin/enrollments">
                 <Users className="h-4 w-4" />
-                View Enrollments
-              </Link>
-            </Button>
-            <Button variant="secondary" size="sm" asChild>
-              <Link to="/admin/enrollments">
-                <GraduationCap className="h-4 w-4" />
                 Enrollments
-              </Link>
-            </Button>
-            <Button variant="secondary" size="sm" asChild>
-              <Link to="/admin/quizzes">
-                <FileText className="h-4 w-4" />
-                Quizzes
               </Link>
             </Button>
           </motion.div>
