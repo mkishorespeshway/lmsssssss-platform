@@ -4,20 +4,53 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { GraduationCap, Mail, Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState } from "react";
+import { useAuth } from "../context/AuthContext";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [message, setMessage] = useState("");
+  const [isError, setIsError] = useState(false);
+  const navigate = useNavigate();
+  const { login } = useAuth();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle login logic here
-    console.log("Login submitted");
+    setMessage("");
+    setIsError(false);
+
+    try {
+      const response = await fetch("http://localhost:5000/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setMessage(data.message);
+        setIsError(false);
+        console.log("User logged in:", data.user);
+        login(data.user); // Store user data in AuthContext
+        navigate("/dashboard"); // Redirect to dashboard
+      } else {
+        setMessage(data.message || "Login failed.");
+        setIsError(true);
+      }
+    } catch (error) {
+      setMessage("Network error or server is unreachable.");
+      setIsError(true);
+    }
   };
 
   return (
@@ -50,6 +83,13 @@ const Login = () => {
 
               {/* Login Form */}
               <Card variant="elevated" className="p-6 sm:p-8">
+                {message && (
+                  <div
+                    className={`p-3 rounded-md mb-4 text-center ${isError ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"}`}
+                  >
+                    {message}
+                  </div>
+                )}
                 <form onSubmit={handleSubmit} className="space-y-5">
                   {/* Email */}
                   <div className="space-y-2">

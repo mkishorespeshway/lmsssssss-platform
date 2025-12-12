@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import {
   BookOpen,
   Clock,
@@ -20,6 +21,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { motion } from "framer-motion";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const enrolledCourses: Array<{
   id: string;
@@ -49,6 +51,15 @@ const announcements: Array<{
 }> = [];
 
 const StudentDashboard = () => {
+  const { user, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+
+  // Redirect to login if not authenticated
+  if (!isAuthenticated || !user) {
+    navigate("/login");
+    return null;
+  }
+
   const coursesEnrolled = 0;
   const coursesCompleted = 0;
   const certificatesEarned = 0;
@@ -68,13 +79,19 @@ const StudentDashboard = () => {
             className="mb-8"
           >
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div>
-                <h1 className="font-heading text-2xl sm:text-3xl font-bold text-foreground mb-1">
-                  Welcome back!
-                </h1>
-                <p className="text-muted-foreground">
-                  Continue where you left off and keep learning.
-                </p>
+              <div className="flex items-center gap-4">
+                <Avatar className="h-16 w-16">
+                  <AvatarImage src={user.profilePicture ? user.profilePicture : `https://api.dicebear.com/7.x/initials/svg?seed=${user.username}`} alt={user.username} />
+                  <AvatarFallback>{user.username.charAt(0)}</AvatarFallback>
+                </Avatar>
+                <div>
+                  <h1 className="font-heading text-2xl sm:text-3xl font-bold text-foreground mb-1">
+                    Welcome back, {user.username}!
+                  </h1>
+                  <p className="text-muted-foreground">
+                    {user.email}
+                  </p>
+                </div>
               </div>
               <Button variant="default" asChild>
                 <Link to="/courses">

@@ -1,8 +1,9 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X, GraduationCap, User, LogIn } from "lucide-react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAuth } from "../../context/AuthContext";
 
 const navLinks = [
   { href: "/courses", label: "Courses" },
@@ -13,6 +14,9 @@ const navLinks = [
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { isAuthenticated, logout, user } = useAuth();
+  const dashboardPath = user?.role === "admin" ? "/admin" : "/dashboard";
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 glass">
@@ -47,18 +51,40 @@ export function Navbar() {
 
           {/* Desktop Auth Buttons */}
           <div className="hidden md:flex items-center gap-3">
-            <Button variant="ghost" size="sm" asChild>
-              <Link to="/login">
-                <LogIn className="h-4 w-4" />
-                Log In
-              </Link>
-            </Button>
-            <Button size="sm" asChild>
-              <Link to="/register">
-                <User className="h-4 w-4" />
-                Sign Up
-              </Link>
-            </Button>
+            {isAuthenticated ? (
+              <>
+                <Button variant="ghost" size="sm" asChild>
+                  <Link to={dashboardPath}>
+                    <GraduationCap className="h-4 w-4" />
+                    Dashboard
+                  </Link>
+                </Button>
+                <Button variant="ghost" size="sm" asChild>
+                  <Link to="/profile">
+                    <User className="h-4 w-4" />
+                    Profile
+                  </Link>
+                </Button>
+                <Button size="sm" onClick={() => { logout(); navigate('/login'); }}>
+                  Log Out
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button variant="ghost" size="sm" asChild>
+                  <Link to="/login">
+                    <LogIn className="h-4 w-4" />
+                    Log In
+                  </Link>
+                </Button>
+                <Button size="sm" asChild>
+                  <Link to="/register">
+                    <User className="h-4 w-4" />
+                    Sign Up
+                  </Link>
+                </Button>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -97,16 +123,36 @@ export function Navbar() {
                   </Link>
                 ))}
                 <div className="flex flex-col gap-2 pt-4 border-t border-border">
-                  <Button variant="outline" size="sm" asChild>
-                    <Link to="/login" onClick={() => setIsOpen(false)}>
-                      Log In
-                    </Link>
-                  </Button>
-                  <Button size="sm" asChild>
-                    <Link to="/register" onClick={() => setIsOpen(false)}>
-                      Sign Up
-                    </Link>
-                  </Button>
+                  {isAuthenticated ? (
+                    <>
+                      <Button variant="outline" size="sm" asChild>
+                        <Link to={dashboardPath} onClick={() => setIsOpen(false)}>
+                          Dashboard
+                        </Link>
+                      </Button>
+                      <Button variant="outline" size="sm" asChild>
+                        <Link to="/profile" onClick={() => setIsOpen(false)}>
+                          Profile
+                        </Link>
+                      </Button>
+                      <Button size="sm" onClick={() => { logout(); setIsOpen(false); navigate('/login'); }}>
+                        Log Out
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Button variant="outline" size="sm" asChild>
+                        <Link to="/login" onClick={() => setIsOpen(false)}>
+                          Log In
+                        </Link>
+                      </Button>
+                      <Button size="sm" asChild>
+                        <Link to="/register" onClick={() => setIsOpen(false)}>
+                          Sign Up
+                        </Link>
+                      </Button>
+                    </>
+                  )}
                 </div>
               </div>
             </motion.div>

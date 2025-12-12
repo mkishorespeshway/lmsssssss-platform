@@ -6,6 +6,7 @@ import plans from "./plans.routes.js";
 import announcements from "./announcements.routes.js";
 import achievements from "./achievements.routes.js";
 import analytics from "./analytics.routes.js";
+import auth from "./auth.routes.js";
 
 const router = Router();
 router.use("/courses", courses);
@@ -15,4 +16,5 @@ router.use("/plans", plans);
 router.use("/announcements", announcements);
 router.use("/achievements", achievements);
 router.use("/analytics", analytics);
+router.use("/auth", auth);
 export default router;

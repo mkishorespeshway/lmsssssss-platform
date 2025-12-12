@@ -5,24 +5,74 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { GraduationCap, Mail, Lock, User, Eye, EyeOff, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState } from "react";
 
 const Register = () => {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
+    phone: "",
+    profilePicture: null,
     agreedToTerms: false,
   });
+  const [message, setMessage] = useState("");
+  const [isError, setIsError] = useState(false);
+  const [phoneError, setPhoneError] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle registration logic here
-    console.log("Registration submitted", formData);
+    setMessage("");
+    setIsError(false);
+
+    if (phoneError) {
+      setIsError(true);
+      setMessage("Please fix the phone number error.");
+      return;
+    }
+
+    const formDataToSend = new FormData();
+    formDataToSend.append("username", formData.name);
+    formDataToSend.append("email", formData.email);
+    formDataToSend.append("password", formData.password);
+    formDataToSend.append("phone", formData.phone);
+    if (formData.profilePicture) {
+      formDataToSend.append("profilePicture", formData.profilePicture);
+    }
+
+    try {
+      const response = await fetch("http://localhost:5000/api/auth/register", {
+        method: "POST",
+        body: formDataToSend,
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setMessage(data.message);
+        setIsError(false);
+        setFormData({
+          name: "",
+          email: "",
+          password: "",
+          phone: "",
+          profilePicture: null,
+          agreedToTerms: false,
+        });
+        navigate("/login");
+      } else {
+        setMessage(data.message || "Registration failed.");
+        setIsError(true);
+      }
+    } catch (error) {
+      setMessage("Network error or server is unreachable.");
+      setIsError(true);
+    }
   };
 
   return (
@@ -55,6 +105,13 @@ const Register = () => {
 
               {/* Registration Form */}
               <Card variant="elevated" className="p-6 sm:p-8">
+                {message && (
+                  <div
+                    className={`p-3 rounded-md mb-4 text-center ${isError ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"}`}
+                  >
+                    {message}
+                  </div>
+                )}
                 <form onSubmit={handleSubmit} className="space-y-5">
                   {/* Name */}
                   <div className="space-y-2">
@@ -92,6 +149,48 @@ const Register = () => {
                         required
                       />
                     </div>
+                  </div>
+
+                  {/* Phone Number */}
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">Phone Number</Label>
+                    <div className="relative">
+                      <Input
+                        id="phone"
+                        type="tel"
+                        placeholder="Enter your phone number"
+                        value={formData.phone}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          const filteredValue = value.replace(/\D/g, ''); // Only allow digits
+                          const limitedValue = filteredValue.slice(0, 10); // Limit to 10 digits
+                          setFormData({ ...formData, phone: limitedValue });
+                          if (!/^[6-9]\d{9}$/.test(limitedValue) && limitedValue !== "") {
+                            setPhoneError("Phone number must start with 6-9 and be exactly 10 digits.");
+                          } else {
+                            setPhoneError("");
+                          }
+                        }}
+                        className="pl-3"
+                        maxLength={10}
+                        required
+                      />
+                    </div>
+                    {phoneError && <p className="text-red-500 text-xs">{phoneError}</p>}
+                  </div>
+
+                  {/* Profile Picture */}
+                  <div className="space-y-2">
+                    <Label htmlFor="profilePicture">Profile Picture</Label>
+                    <Input
+                      id="profilePicture"
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) =>
+                        setFormData({ ...formData, profilePicture: e.target.files ? e.target.files[0] : null })
+                      }
+                      className="pl-3"
+                    />
                   </div>
 
                   {/* Password */}
