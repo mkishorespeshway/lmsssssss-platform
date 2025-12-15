@@ -11,7 +11,9 @@ const schema = new mongoose.Schema(
     image: { type: String, default: "" },
     videoUrls: { type: [String], default: [] },
     videoTitles: { type: [String], default: [] },
-    videoDescriptions: { type: [String], default: [] }
+    videoDescriptions: { type: [String], default: [] },
+    level: { type: String, default: "" },
+    videoDuration: { type: String, default: "" }
   },
   { timestamps: true }
 );

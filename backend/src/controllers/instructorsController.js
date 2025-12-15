@@ -2,7 +2,12 @@ import Instructor from "../models/Instructor.js";
 
 const list = async (req, res, next) => {
   try {
-    const instructors = await Instructor.find();
+    const { category } = req.query;
+    let query = {};
+    if (category) {
+      query.category = category;
+    }
+    const instructors = await Instructor.find(query);
     res.json(instructors);
   } catch (e) {
     next(e);
@@ -24,7 +29,7 @@ const get = async (req, res, next) => {
 
 const create = async (req, res, next) => {
   try {
-    const { name, title, category, image, videoUrls, videoTitles, videoDescriptions } = req.body;
+    const { name, title, category, image, videoUrls, videoTitles, videoDescriptions, level, videoDuration } = req.body;
     const newInstructor = new Instructor({
       name,
       title,
@@ -33,6 +38,8 @@ const create = async (req, res, next) => {
       videoUrls: videoUrls || [],
       videoTitles: videoTitles || [],
       videoDescriptions: videoDescriptions || [],
+      level,
+      videoDuration,
     });
     await newInstructor.save();
     res.status(201).json(newInstructor);
@@ -43,7 +50,7 @@ const create = async (req, res, next) => {
 
 const update = async (req, res, next) => {
   try {
-    const { name, title, category, image, videoUrls, videoTitles, videoDescriptions } = req.body;
+    const { name, title, category, image, videoUrls, videoTitles, videoDescriptions, level, videoDuration } = req.body;
     const updatedInstructor = await Instructor.findByIdAndUpdate(
       req.params.id,
       {
@@ -54,6 +61,8 @@ const update = async (req, res, next) => {
         videoUrls: videoUrls || [],
         videoTitles: videoTitles || [],
         videoDescriptions: videoDescriptions || [],
+        level,
+        videoDuration,
       },
       { new: true, runValidators: true }
     );

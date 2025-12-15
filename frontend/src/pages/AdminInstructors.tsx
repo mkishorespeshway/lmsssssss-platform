@@ -37,6 +37,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface Instructor {
   _id: string;
@@ -47,6 +54,8 @@ interface Instructor {
   videoUrls: string[];
   videoTitles: string[];
   videoDescriptions: string[];
+  level: "Beginner" | "Intermediate" | "Advanced";
+  videoDuration: string;
 }
 
 const AdminInstructors = () => {
@@ -114,6 +123,8 @@ const AdminInstructors = () => {
       videoUrls: (formData.get("videoUrls") as string)?.split(',').map(url => url.trim()).filter(url => url !== '') || [],
       videoTitles: (formData.get("videoTitles") as string)?.split(',').map(title => title.trim()).filter(title => title !== '') || [],
       videoDescriptions: (formData.get("videoDescriptions") as string)?.split(',').map(desc => desc.trim()).filter(desc => desc !== '') || [],
+      level: formData.get("level") as "Beginner" | "Intermediate" | "Advanced",
+      videoDuration: formData.get("videoDuration") as string,
     };
 
     try {
@@ -274,28 +285,44 @@ const AdminInstructors = () => {
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="title" className="text-right">
-                Title
+              <Label htmlFor="courseTitle" className="text-right">
+                Course title
               </Label>
               <Input
-                id="title"
+                id="courseTitle"
                 name="title"
                 defaultValue={currentInstructor?.title || ""}
                 className="col-span-3"
-                required
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="category" className="text-right">
-              Category
-            </Label>
-            <Input
-              id="category"
-              name="category"
-              defaultValue={currentInstructor?.category || ""}
-              className="col-span-3"
-              required
-            />
+                Category
+              </Label>
+              <Input
+                id="category"
+                name="category"
+                defaultValue={currentInstructor?.category || ""}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="level" className="text-right">
+                Level
+              </Label>
+              <Select
+                name="level"
+                defaultValue={currentInstructor?.level || "Beginner"}
+              >
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Select a level" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Beginner">Beginner</SelectItem>
+                  <SelectItem value="Intermediate">Intermediate</SelectItem>
+                  <SelectItem value="Advanced">Advanced</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="image" className="text-right">
@@ -306,7 +333,17 @@ const AdminInstructors = () => {
                 name="image"
                 defaultValue={currentInstructor?.image || ""}
                 className="col-span-3"
-                required
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="videoDuration" className="text-right">
+                Video Duration
+              </Label>
+              <Input
+                id="videoDuration"
+                name="videoDuration"
+                defaultValue={currentInstructor?.videoDuration || ""}
+                className="col-span-3"
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">

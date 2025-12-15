@@ -4,7 +4,7 @@ import { connectDB } from "./db.js";
 
 dotenv.config({ override: true });
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.argv.includes('--port') ? process.argv[process.argv.indexOf('--port') + 1] : process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://naveendamera317_db_user:1234@cluster0.py9kknq.mongodb.net/?appName=Cluster0";
 
 const start = async () => {

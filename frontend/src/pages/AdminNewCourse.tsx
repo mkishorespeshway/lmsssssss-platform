@@ -54,7 +54,9 @@ const AdminNewCourse = () => {
   useEffect(() => {
     const fetchInstructors = async () => {
       try {
-        const response = await fetch("/api/instructors");
+        const category = courseData.category;
+        const url = category ? `/api/instructors?category=${category}` : "/api/instructors";
+        const response = await fetch(url);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -73,7 +75,7 @@ const AdminNewCourse = () => {
     };
 
     fetchInstructors();
-  }, []);
+  }, [courseData.category]);
 
   useEffect(() => {
     const fetchCategories = async () => {
