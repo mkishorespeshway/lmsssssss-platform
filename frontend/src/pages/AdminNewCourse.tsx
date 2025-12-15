@@ -14,17 +14,31 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 
 
+interface Video {
+  url: string;
+  title: string;
+  description: string;
+}
+
+interface LevelVideoData {
+  videos: Video[];
+  videoDuration: string;
+}
+
+interface LevelVideos {
+  Beginner: LevelVideoData;
+  Intermediate: LevelVideoData;
+  Advanced: LevelVideoData;
+}
+
 interface Instructor {
   _id: string;
   name: string;
   title: string;
   category: string;
   image: string;
+  levelVideos: LevelVideos;
   level: "Beginner" | "Intermediate" | "Advanced";
-  videoDuration: string;
-  videoTitles: string[];
-  videoDescriptions: string[];
-  videoUrls: string[];
 }
 
 interface Lesson {
@@ -51,6 +65,9 @@ const AdminNewCourse = () => {
     thumbnailUrl: "",
     instructorId: "",
     videoDuration: "",
+    videoTitles: [],
+    videoDescriptions: [],
+    videoUrls: [],
   });
   const [instructors, setInstructors] = useState<Instructor[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
@@ -232,13 +249,17 @@ const AdminNewCourse = () => {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="level">Level</Label>
-                    <Select value={courseData.level} onValueChange={(value) => setCourseData({ ...courseData, level: value })} disabled={!!selectedInstructor}>
+                    <Select value={courseData.level} onValueChange={(value) => setCourseData({ ...courseData, level: value })}>
                       <SelectTrigger><SelectValue placeholder="Select level" /></SelectTrigger>
                       <SelectContent>
                         {selectedInstructor ? (
-                          <SelectItem value={selectedInstructor.level}>
-                            {selectedInstructor.level}
-                          </SelectItem>
+                          Object.entries(selectedInstructor.levelVideos).map(([level, data]) => (
+                            data.videos.length > 0 && (
+                              <SelectItem key={level} value={level}>
+                                {level}
+                              </SelectItem>
+                            )
+                          ))
                         ) : (
                           <>
                             <SelectItem value="Beginner">Beginner</SelectItem>
@@ -265,31 +286,37 @@ const AdminNewCourse = () => {
                     <Label>Select Instructor</Label>
                     <Select value={courseData.instructorId} onValueChange={(value) => {
                       const selected = instructors.find(i => i._id === value);
-                      setCourseData({ 
-                        ...courseData, 
-                        instructorId: value, 
-                        level: selected?.level || "",
-                        title: selected?.title || "",
-                        description: selected?.videoDescriptions[0] || "",
-                        videoDuration: selected?.videoDuration || "",
-                      });
-
-                      if (selected && selected.videoTitles && selected.videoTitles.length > 0) {
-                        const updatedSections = sections.map((section, sIndex) => {
-                          return {
-                            ...section,
-                            lessons: section.lessons.map((lesson, lIndex) => {
-                              const videoTitleIndex = sIndex * section.lessons.length + lIndex;
-                              return {
-                                ...lesson,
-                                videoTitle: selected.videoTitles[videoTitleIndex] || "",
-                                duration: selected.videoDuration || "",
-                                videoUrl: selected.videoUrls[videoTitleIndex] || "",
-                              };
-                            }),
-                          };
+                      if (selected) {
+                        const selectedLevelVideos = selected.levelVideos[selected.level];
+                        setCourseData({
+                          ...courseData,
+                          instructorId: value,
+                          level: selected.level,
+                          title: selected.title,
+                          description: selectedLevelVideos?.videos[0]?.description || "",
+                          videoDuration: selectedLevelVideos?.videoDuration || "",
+                          videoTitles: selectedLevelVideos?.videos.map(video => video.title) || [],
+                          videoDescriptions: selectedLevelVideos?.videos.map(video => video.description) || [],
+                          videoUrls: selectedLevelVideos?.videos.map(video => video.url) || [],
                         });
-                        setSections(updatedSections);
+
+                        if (selectedLevelVideos && selectedLevelVideos.videos.length > 0) {
+                          const updatedSections = sections.map((section, sIndex) => {
+                            return {
+                              ...section,
+                              lessons: section.lessons.map((lesson, lIndex) => {
+                                const videoIndex = sIndex * section.lessons.length + lIndex;
+                                return {
+                                  ...lesson,
+                                  videoTitle: selectedLevelVideos.videos[videoIndex]?.title || "",
+                                  duration: selectedLevelVideos.videoDuration || "",
+                                  videoUrl: selectedLevelVideos.videos[videoIndex]?.url || "",
+                                };
+                              }),
+                            };
+                          });
+                          setSections(updatedSections);
+                        }
                       }
                     }}>
                       <SelectTrigger>
