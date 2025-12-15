@@ -16,6 +16,7 @@ import AdminCourses from "./pages/AdminCourses";
 import AdminNewCourse from "./pages/AdminNewCourse";
 import AdminEnrollments from "./pages/AdminEnrollments";
 import AdminInstructors from "./pages/AdminInstructors";
+import AdminInstructorVideos from "./pages/AdminInstructorVideos";
 import LessonPlayer from "./pages/LessonPlayer";
 import Quiz from "./pages/Quiz";
 import Certificate from "./pages/Certificate";
@@ -71,6 +72,7 @@ const App = () => (
           <Route path="/admin/courses/new" element={<AdminNewCourse />} />
           <Route path="/admin/enrollments" element={<AdminEnrollments />} />
           <Route path="/admin/instructors" element={<AdminInstructors />} />
+          <Route path="/admin/instructors/:id/videos" element={<AdminInstructorVideos />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

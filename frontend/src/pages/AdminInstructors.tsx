@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Plus,
   Edit,
@@ -13,6 +13,7 @@ import {
   User,
   Search,
   MoreVertical,
+  Video,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "@/hooks/use-toast";
@@ -45,17 +46,31 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+interface Video {
+  url: string;
+  title: string;
+  description: string;
+}
+
+interface LevelVideoData {
+  videos: Video[];
+  videoDuration: string;
+}
+
+interface LevelVideos {
+  Beginner: LevelVideoData;
+  Intermediate: LevelVideoData;
+  Advanced: LevelVideoData;
+}
+
 interface Instructor {
   _id: string;
   name: string;
   title: string;
   category: string;
   image: string;
-  videoUrls: string[];
-  videoTitles: string[];
-  videoDescriptions: string[];
+  levelVideos: LevelVideos;
   level: "Beginner" | "Intermediate" | "Advanced";
-  videoDuration: string;
 }
 
 const AdminInstructors = () => {
@@ -65,6 +80,7 @@ const AdminInstructors = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentInstructor, setCurrentInstructor] = useState<Instructor | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchInstructors();
@@ -128,11 +144,35 @@ const AdminInstructors = () => {
       title: formData.get("title") as string,
       category: formData.get("category") as string,
       image: formData.get("image") as string,
-      videoUrls: (formData.get("videoUrls") as string)?.split(',').map(url => url.trim()).filter(url => url !== '') || [],
-      videoTitles: (formData.get("videoTitles") as string)?.split(',').map(title => title.trim()).filter(title => title !== '') || [],
-      videoDescriptions: (formData.get("videoDescriptions") as string)?.split(',').map(desc => desc.trim()).filter(desc => desc !== '') || [],
       level: formData.get("level") as "Beginner" | "Intermediate" | "Advanced",
       videoDuration: formData.get("videoDuration") as string,
+    };
+
+    const videoUrls = (formData.get("videoUrls") as string)?.split(',').map(url => url.trim()).filter(url => url !== '') || [];
+    const videoTitles = (formData.get("videoTitles") as string)?.split(',').map(title => title.trim()).filter(title => title !== '') || [];
+    const videoDescriptions = (formData.get("videoDescriptions") as string)?.split(',').map(desc => desc.trim()).filter(desc => desc !== '') || [];
+
+    const videos: Video[] = videoUrls.map((url, index) => ({
+      url,
+      title: videoTitles[index] || '',
+      description: videoDescriptions[index] || '',
+    }));
+
+    const levelVideos: LevelVideos = currentInstructor?.levelVideos || {
+      Beginner: { videos: [], videoDuration: "" },
+      Intermediate: { videos: [], videoDuration: "" },
+      Advanced: { videos: [], videoDuration: "" },
+    };
+
+    const currentLevel = instructorData.level;
+    levelVideos[currentLevel] = {
+      videos,
+      videoDuration: instructorData.videoDuration,
+    };
+
+    const payload = {
+      ...instructorData,
+      levelVideos,
     };
 
     try {
@@ -157,6 +197,29 @@ const AdminInstructors = () => {
         errorMessage = error.message;
       }
       toast({ title: `Error ${currentInstructor ? "updating" : "adding"} instructor`, description: errorMessage, variant: "destructive" });
+    }
+  };
+
+  const handleLevelChange = async (instructorId: string, newLevel: "Beginner" | "Intermediate" | "Advanced") => {
+    try {
+      const response = await fetch(`/api/instructors/${instructorId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ level: newLevel }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      toast({ title: "Instructor level updated successfully" });
+      fetchInstructors();
+    } catch (error: unknown) {
+      let errorMessage = "An unknown error occurred";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      toast({ title: "Error updating instructor level", description: errorMessage, variant: "destructive" });
     }
   };
 
@@ -220,6 +283,8 @@ const AdminInstructors = () => {
                     <TableHead>Instructor</TableHead>
                     <TableHead>Title</TableHead>
                     <TableHead>Category</TableHead>
+                    <TableHead>Level</TableHead>
+                  <TableHead>Videos</TableHead>
                     <TableHead className="w-[50px]"></TableHead>
                   </TableRow>
                 </TableHeader>
@@ -247,6 +312,33 @@ const AdminInstructors = () => {
                         </TableCell>
                         <TableCell>{instructor.title}</TableCell>
                         <TableCell>{instructor.category}</TableCell>
+                        <TableCell>
+                          <Select
+                            value={instructor.level}
+                            onValueChange={(value) =>
+                              handleLevelChange(instructor._id, value as "Beginner" | "Intermediate" | "Advanced")
+                            }
+                          >
+                            <SelectTrigger className="w-[140px]">
+                              <SelectValue placeholder="Select Level" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Beginner">Beginner</SelectItem>
+                              <SelectItem value="Intermediate">Intermediate</SelectItem>
+                              <SelectItem value="Advanced">Advanced</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => navigate(`/admin/instructors/${instructor._id}/videos`)}
+                          >
+                            <Video className="h-4 w-4 mr-2" />
+                            Go to Videos
+                          </Button>
+                        </TableCell>
                         <TableCell>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -354,7 +446,7 @@ const AdminInstructors = () => {
               <Input
                 id="videoDuration"
                 name="videoDuration"
-                defaultValue={currentInstructor?.videoDuration || ""}
+                defaultValue={currentInstructor?.levelVideos?.[currentInstructor.level as keyof LevelVideos]?.videoDuration || ""}
                 className="col-span-3"
               />
             </div>
@@ -365,7 +457,7 @@ const AdminInstructors = () => {
               <Input
                 id="videoUrls"
                 name="videoUrls"
-                defaultValue={currentInstructor?.videoUrls.join(", ") || ""}
+                defaultValue={currentInstructor?.levelVideos?.[currentInstructor.level as keyof LevelVideos]?.videos.map(video => video.url).join(", ") || ""}
                 className="col-span-3"
               />
             </div>
@@ -376,7 +468,7 @@ const AdminInstructors = () => {
               <Input
                 id="videoTitles"
                 name="videoTitles"
-                defaultValue={currentInstructor?.videoTitles.join(", ") || ""}
+                defaultValue={currentInstructor?.levelVideos?.[currentInstructor.level as keyof LevelVideos]?.videos.map(video => video.title).join(", ") || ""}
                 className="col-span-3"
               />
             </div>
@@ -387,7 +479,7 @@ const AdminInstructors = () => {
               <Input
                 id="videoDescriptions"
                 name="videoDescriptions"
-                defaultValue={currentInstructor?.videoDescriptions.join(", ") || ""}
+                defaultValue={currentInstructor?.levelVideos?.[currentInstructor.level as keyof LevelVideos]?.videos.map(video => video.description).join(", ") || ""}
                 className="col-span-3"
               />
             </div>

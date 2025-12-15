@@ -29,17 +29,18 @@ const get = async (req, res, next) => {
 
 const create = async (req, res, next) => {
   try {
-    const { name, title, category, image, videoUrls, videoTitles, videoDescriptions, level, videoDuration } = req.body;
+    const { name, title, category, image, level, levelVideos } = req.body;
     const newInstructor = new Instructor({
       name,
       title,
       category,
       image,
-      videoUrls: videoUrls || [],
-      videoTitles: videoTitles || [],
-      videoDescriptions: videoDescriptions || [],
       level,
-      videoDuration,
+      levelVideos: levelVideos || {
+        Beginner: { videos: [], videoDuration: "" },
+        Intermediate: { videos: [], videoDuration: "" },
+        Advanced: { videos: [], videoDuration: "" },
+      },
     });
     await newInstructor.save();
     res.status(201).json(newInstructor);
@@ -50,22 +51,25 @@ const create = async (req, res, next) => {
 
 const update = async (req, res, next) => {
   try {
-    const { name, title, category, image, videoUrls, videoTitles, videoDescriptions, level, videoDuration } = req.body;
+    const { name, title, category, image, level, levelVideos } = req.body;
+    const updateFields = {
+      name,
+      title,
+      category,
+      image,
+      level,
+    };
+
+    if (levelVideos) {
+      updateFields.levelVideos = levelVideos;
+    }
+
     const updatedInstructor = await Instructor.findByIdAndUpdate(
       req.params.id,
-      {
-        name,
-        title,
-        category,
-        image,
-        videoUrls: videoUrls || [],
-        videoTitles: videoTitles || [],
-        videoDescriptions: videoDescriptions || [],
-        level,
-        videoDuration,
-      },
+      updateFields,
       { new: true, runValidators: true }
     );
+    console.log("Updated Instructor in backend:", updatedInstructor);
     if (!updatedInstructor) {
       res.status(404).json({ message: "Instructor not found" });
       return;
