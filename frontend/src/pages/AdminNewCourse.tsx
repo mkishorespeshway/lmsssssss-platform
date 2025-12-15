@@ -47,6 +47,7 @@ const AdminNewCourse = () => {
     instructorId: "",
   });
   const [instructors, setInstructors] = useState<Instructor[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -72,6 +73,27 @@ const AdminNewCourse = () => {
     };
 
     fetchInstructors();
+  }, []);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch("/api/analytics/overview");
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        setCategories(data.categories);
+      } catch (err: any) {
+        toast({
+          title: "Error fetching categories",
+          description: err.message,
+          variant: "destructive",
+        });
+      }
+    };
+
+    fetchCategories();
   }, []);
   
   const [sections, setSections] = useState<Section[]>([
@@ -184,11 +206,11 @@ const AdminNewCourse = () => {
                       <Select value={courseData.category} onValueChange={(value) => setCourseData({ ...courseData, category: value })}>
                         <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="web-development">Web Development</SelectItem>
-                          <SelectItem value="data-science">Data Science</SelectItem>
-                          <SelectItem value="design">Design</SelectItem>
-                          <SelectItem value="marketing">Marketing</SelectItem>
-                          <SelectItem value="mobile">Mobile Development</SelectItem>
+                          {categories.map((category) => (
+                            <SelectItem key={category} value={category}>
+                              {category}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </div>
