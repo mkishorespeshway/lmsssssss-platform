@@ -78,9 +78,13 @@ const AdminInstructors = () => {
       }
       const data = await response.json();
       setInstructors(data);
-    } catch (error: any) {
-      setError(error.message);
-      toast({ title: "Error fetching instructors", description: error.message, variant: "destructive" });
+    } catch (error: unknown) {
+      let errorMessage = "An unknown error occurred";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      setError(errorMessage);
+      toast({ title: "Error fetching instructors", description: errorMessage, variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -107,8 +111,12 @@ const AdminInstructors = () => {
       }
       toast({ title: "Instructor deleted successfully" });
       fetchInstructors();
-    } catch (error: any) {
-      toast({ title: "Error deleting instructor", description: error.message, variant: "destructive" });
+    } catch (error: unknown) {
+      let errorMessage = "An unknown error occurred";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      toast({ title: "Error deleting instructor", description: errorMessage, variant: "destructive" });
     }
   };
 
@@ -143,8 +151,12 @@ const AdminInstructors = () => {
       toast({ title: `Instructor ${currentInstructor ? "updated" : "added"} successfully` });
       setIsModalOpen(false);
       fetchInstructors();
-    } catch (error: any) {
-      toast({ title: `Error ${currentInstructor ? "updating" : "adding"} instructor`, description: error.message, variant: "destructive" });
+    } catch (error: unknown) {
+      let errorMessage = "An unknown error occurred";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      toast({ title: `Error ${currentInstructor ? "updating" : "adding"} instructor`, description: errorMessage, variant: "destructive" });
     }
   };
 

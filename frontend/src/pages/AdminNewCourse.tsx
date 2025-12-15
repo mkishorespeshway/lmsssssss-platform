@@ -20,11 +20,16 @@ interface Instructor {
   title: string;
   category: string;
   image: string;
+  level: "Beginner" | "Intermediate" | "Advanced";
+  videoDuration: string;
+  videoTitles: string[];
+  videoDescriptions: string[];
+  videoUrls: string[];
 }
 
 interface Lesson {
   id: string;
-  title: string;
+  videoTitle: string;
   duration: string;
   videoUrl: string;
 }
@@ -45,6 +50,7 @@ const AdminNewCourse = () => {
     price: "",
     thumbnailUrl: "",
     instructorId: "",
+    videoDuration: "",
   });
   const [instructors, setInstructors] = useState<Instructor[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
@@ -62,11 +68,15 @@ const AdminNewCourse = () => {
         }
         const data = await response.json();
         setInstructors(data);
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err: unknown) {
+        let errorMessage = "An unknown error occurred";
+        if (err instanceof Error) {
+          errorMessage = err.message;
+        }
+        setError(errorMessage);
         toast({
           title: "Error fetching instructors",
-          description: err.message,
+          description: errorMessage,
           variant: "destructive",
         });
       } finally {
@@ -86,10 +96,14 @@ const AdminNewCourse = () => {
         }
         const data = await response.json();
         setCategories(data.categories);
-      } catch (err: any) {
+      } catch (err: unknown) {
+        let errorMessage = "An unknown error occurred";
+        if (err instanceof Error) {
+          errorMessage = err.message;
+        }
         toast({
           title: "Error fetching categories",
-          description: err.message,
+          description: errorMessage,
           variant: "destructive",
         });
       }
@@ -99,19 +113,19 @@ const AdminNewCourse = () => {
   }, []);
   
   const [sections, setSections] = useState<Section[]>([
-    { id: "1", title: "Getting Started", lessons: [{ id: "1-1", title: "", duration: "", videoUrl: "" }] },
+    { id: "1", title: "Getting Started", lessons: [{ id: "1-1", videoTitle: "", duration: "", videoUrl: "" }] },
   ]);
 
   const addSection = () => {
     const newId = (sections.length + 1).toString();
-    setSections([...sections, { id: newId, title: "", lessons: [{ id: `${newId}-1`, title: "", duration: "", videoUrl: "" }] }]);
+    setSections([...sections, { id: newId, title: "", lessons: [{ id: `${newId}-1`, videoTitle: "", duration: "", videoUrl: "" }] }]);
   };
 
   const addLesson = (sectionId: string) => {
     setSections(sections.map((s) => {
       if (s.id === sectionId) {
         const newLessonId = `${sectionId}-${s.lessons.length + 1}`;
-        return { ...s, lessons: [...s.lessons, { id: newLessonId, title: "", duration: "", videoUrl: "" }] };
+        return { ...s, lessons: [...s.lessons, { id: newLessonId, videoTitle: "", duration: "", videoUrl: "" }] };
       }
       return s;
     }));
@@ -132,7 +146,7 @@ const AdminNewCourse = () => {
     }));
   };
 
-  const updateLesson = (sectionIndex: number, lessonIndex: number, field: keyof Lesson, value: string) => {
+  const updateLesson = (sectionIndex: number, lessonIndex: number, field: "videoTitle" | "duration" | "videoUrl", value: string) => {
     const updated = [...sections];
     updated[sectionIndex].lessons[lessonIndex] = {
       ...updated[sectionIndex].lessons[lessonIndex],
@@ -202,36 +216,44 @@ const AdminNewCourse = () => {
                     <Label htmlFor="description">Description</Label>
                     <Textarea id="description" placeholder="Describe what students will learn..." rows={4} value={courseData.description} onChange={(e) => setCourseData({ ...courseData, description: e.target.value })} required />
                   </div>
-                  <div className="grid sm:grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <Label>Category</Label>
-                      <Select value={courseData.category} onValueChange={(value) => setCourseData({ ...courseData, category: value })}>
-                        <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
-                        <SelectContent>
-                          {categories.map((category) => (
-                            <SelectItem key={category} value={category}>
-                              {category}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Level</Label>
-                      <Select value={courseData.level} onValueChange={(value) => setCourseData({ ...courseData, level: value })}>
-                        <SelectTrigger><SelectValue placeholder="Select level" /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="beginner">Beginner</SelectItem>
-                          <SelectItem value="intermediate">Intermediate</SelectItem>
-                          <SelectItem value="advanced">Advanced</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="price">Price ($)</Label>
-                      <Input id="price" type="number" placeholder="0 for free" value={courseData.price} onChange={(e) => setCourseData({ ...courseData, price: e.target.value })} />
-                    </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="category">Category</Label>
+                    <Select value={courseData.category} onValueChange={(value) => setCourseData({ ...courseData, category: value })}>
+                      <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
+                      <SelectContent>
+                        {categories.map((category) => (
+                          <SelectItem key={category} value={category}>
+                            {category}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="level">Level</Label>
+                    <Select value={courseData.level} onValueChange={(value) => setCourseData({ ...courseData, level: value })} disabled={!!selectedInstructor}>
+                      <SelectTrigger><SelectValue placeholder="Select level" /></SelectTrigger>
+                      <SelectContent>
+                        {selectedInstructor ? (
+                          <SelectItem value={selectedInstructor.level}>
+                            {selectedInstructor.level}
+                          </SelectItem>
+                        ) : (
+                          <>
+                            <SelectItem value="Beginner">Beginner</SelectItem>
+                            <SelectItem value="Intermediate">Intermediate</SelectItem>
+                            <SelectItem value="Advanced">Advanced</SelectItem>
+                          </>
+                        )}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="price">Price</Label>
+                    <Input id="price" placeholder="e.g., $99.99" value={courseData.price} onChange={(e) => setCourseData({ ...courseData, price: e.target.value })} />
+                  </div>
+                </div>
                 </div>
               </Card>
 
@@ -241,7 +263,35 @@ const AdminNewCourse = () => {
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <Label>Select Instructor</Label>
-                    <Select value={courseData.instructorId} onValueChange={(value) => setCourseData({ ...courseData, instructorId: value })}>
+                    <Select value={courseData.instructorId} onValueChange={(value) => {
+                      const selected = instructors.find(i => i._id === value);
+                      setCourseData({ 
+                        ...courseData, 
+                        instructorId: value, 
+                        level: selected?.level || "",
+                        title: selected?.title || "",
+                        description: selected?.videoDescriptions[0] || "",
+                        videoDuration: selected?.videoDuration || "",
+                      });
+
+                      if (selected && selected.videoTitles && selected.videoTitles.length > 0) {
+                        const updatedSections = sections.map((section, sIndex) => {
+                          return {
+                            ...section,
+                            lessons: section.lessons.map((lesson, lIndex) => {
+                              const videoTitleIndex = sIndex * section.lessons.length + lIndex;
+                              return {
+                                ...lesson,
+                                videoTitle: selected.videoTitles[videoTitleIndex] || "",
+                                duration: selected.videoDuration || "",
+                                videoUrl: selected.videoUrls[videoTitleIndex] || "",
+                              };
+                            }),
+                          };
+                        });
+                        setSections(updatedSections);
+                      }
+                    }}>
                       <SelectTrigger>
                         <SelectValue placeholder="Choose an instructor" />
                       </SelectTrigger>
@@ -351,9 +401,9 @@ const AdminNewCourse = () => {
                               <GripVertical className="h-4 w-4 text-muted-foreground cursor-grab" />
                               <span className="text-xs font-medium text-muted-foreground w-16">Lesson {lIndex + 1}</span>
                               <Input 
-                                placeholder="Lesson title" 
-                                value={lesson.title} 
-                                onChange={(e) => updateLesson(sIndex, lIndex, "title", e.target.value)} 
+                                placeholder="Video title" 
+                                value={lesson.videoTitle} 
+                                onChange={(e) => updateLesson(sIndex, lIndex, "videoTitle", e.target.value)} 
                                 className="flex-1" 
                               />
                               <Input 
