@@ -46,30 +46,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-interface Video {
-  url: string;
-  title: string;
-  description: string;
-}
-
-interface LevelVideoData {
-  videos: Video[];
-  videoDuration: string;
-}
-
-interface LevelVideos {
-  Beginner: LevelVideoData;
-  Intermediate: LevelVideoData;
-  Advanced: LevelVideoData;
-}
-
 interface Instructor {
   _id: string;
   name: string;
   title: string;
   category: string;
   image: string;
-  levelVideos: LevelVideos;
   level: "Beginner" | "Intermediate" | "Advanced";
 }
 
@@ -144,35 +126,6 @@ const AdminInstructors = () => {
       title: formData.get("title") as string,
       category: formData.get("category") as string,
       image: formData.get("image") as string,
-      level: formData.get("level") as "Beginner" | "Intermediate" | "Advanced",
-      videoDuration: formData.get("videoDuration") as string,
-    };
-
-    const videoUrls = (formData.get("videoUrls") as string)?.split(',').map(url => url.trim()).filter(url => url !== '') || [];
-    const videoTitles = (formData.get("videoTitles") as string)?.split(',').map(title => title.trim()).filter(title => title !== '') || [];
-    const videoDescriptions = (formData.get("videoDescriptions") as string)?.split(',').map(desc => desc.trim()).filter(desc => desc !== '') || [];
-
-    const videos: Video[] = videoUrls.map((url, index) => ({
-      url,
-      title: videoTitles[index] || '',
-      description: videoDescriptions[index] || '',
-    }));
-
-    const levelVideos: LevelVideos = currentInstructor?.levelVideos || {
-      Beginner: { videos: [], videoDuration: "" },
-      Intermediate: { videos: [], videoDuration: "" },
-      Advanced: { videos: [], videoDuration: "" },
-    };
-
-    const currentLevel = instructorData.level;
-    levelVideos[currentLevel] = {
-      videos,
-      videoDuration: instructorData.videoDuration,
-    };
-
-    const payload = {
-      ...instructorData,
-      levelVideos,
     };
 
     try {
@@ -411,24 +364,6 @@ const AdminInstructors = () => {
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="level" className="text-right">
-                Level
-              </Label>
-              <Select
-                name="level"
-                defaultValue={currentInstructor?.level || "Beginner"}
-              >
-                <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Select a level" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Beginner">Beginner</SelectItem>
-                  <SelectItem value="Intermediate">Intermediate</SelectItem>
-                  <SelectItem value="Advanced">Advanced</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="image" className="text-right">
                 Image URL
               </Label>
@@ -436,50 +371,6 @@ const AdminInstructors = () => {
                 id="image"
                 name="image"
                 defaultValue={currentInstructor?.image || ""}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="videoDuration" className="text-right">
-                Video Duration
-              </Label>
-              <Input
-                id="videoDuration"
-                name="videoDuration"
-                defaultValue={currentInstructor?.levelVideos?.[currentInstructor.level as keyof LevelVideos]?.videoDuration || ""}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="videoUrls" className="text-right">
-                Video URLs (comma-separated)
-              </Label>
-              <Input
-                id="videoUrls"
-                name="videoUrls"
-                defaultValue={currentInstructor?.levelVideos?.[currentInstructor.level as keyof LevelVideos]?.videos.map(video => video.url).join(", ") || ""}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="videoTitles" className="text-right">
-                Video Titles (comma-separated)
-              </Label>
-              <Input
-                id="videoTitles"
-                name="videoTitles"
-                defaultValue={currentInstructor?.levelVideos?.[currentInstructor.level as keyof LevelVideos]?.videos.map(video => video.title).join(", ") || ""}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="videoDescriptions" className="text-right">
-                Video Descriptions (comma-separated)
-              </Label>
-              <Input
-                id="videoDescriptions"
-                name="videoDescriptions"
-                defaultValue={currentInstructor?.levelVideos?.[currentInstructor.level as keyof LevelVideos]?.videos.map(video => video.description).join(", ") || ""}
                 className="col-span-3"
               />
             </div>
