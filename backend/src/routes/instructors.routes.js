@@ -1,6 +1,12 @@
 import { Router } from "express";
-import controller from "../controllers/instructorsController.js";
+import instructorsController from "../controllers/instructorsController.js";
 
 const router = Router();
-router.get("/", controller.list);
+
+router.get("/", instructorsController.list);
+router.get("/:id", instructorsController.get);
+router.post("/", instructorsController.create);
+router.put("/:id", instructorsController.update);
+router.delete("/:id", instructorsController.remove);
+
 export default router;

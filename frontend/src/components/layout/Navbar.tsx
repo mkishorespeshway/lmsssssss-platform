@@ -16,7 +16,7 @@ export function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
   const { isAuthenticated, logout, user } = useAuth();
-  const dashboardPath = user?.role === "admin" ? "/admin" : "/dashboard";
+  const dashboardPath = user?.role === "admin" ? "/admin/dashboard" : "/dashboard";
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 glass">
@@ -130,6 +130,13 @@ export function Navbar() {
                           Dashboard
                         </Link>
                       </Button>
+                      {user?.role === "admin" && (
+                        <Button variant="outline" size="sm" asChild>
+                          <Link to="/admin/instructors" onClick={() => setIsOpen(false)}>
+                            Instructors
+                          </Link>
+                        </Button>
+                      )}
                       <Button variant="outline" size="sm" asChild>
                         <Link to="/profile" onClick={() => setIsOpen(false)}>
                           Profile

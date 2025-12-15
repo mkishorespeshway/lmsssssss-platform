@@ -33,8 +33,24 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
+import { useEffect, useState } from "react";
+import axios from "axios";
 
-const analyticsData = {
+interface AnalyticsData {
+  totalStudents: number;
+  studentGrowth: number;
+  totalCourses: number;
+  courseGrowth: number;
+  totalRevenue: number;
+  revenueGrowth: number;
+  totalEnrollments: number;
+  enrollmentGrowth: number;
+  totalInstructors: number;
+  instructorGrowth: number;
+  categories: string[];
+}
+
+const initialAnalyticsData: AnalyticsData = {
   totalStudents: 0,
   studentGrowth: 0,
   totalCourses: 0,
@@ -43,6 +59,9 @@ const analyticsData = {
   revenueGrowth: 0,
   totalEnrollments: 0,
   enrollmentGrowth: 0,
+  totalInstructors: 0,
+  instructorGrowth: 0,
+  categories: []
 };
 
 const recentEnrollments: Array<{
@@ -65,6 +84,27 @@ const weeklyEnrollments: Array<{ day: string; count: number }> = [];
 const recentActivity: Array<{ id: string; title: string; time: string; tone?: "success" | "primary" | "warning" }> = [];
 
 const AdminDashboard = () => {
+  const [analyticsData, setAnalyticsData] = useState<AnalyticsData>(initialAnalyticsData);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchAnalytics = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get("/api/analytics/overview");
+        setAnalyticsData(response.data);
+      } catch (err) {
+        setError("Failed to fetch analytics data.");
+        console.error("Error fetching analytics data:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAnalytics();
+  }, []);
+
   const maxEnrollment = weeklyEnrollments.length ? Math.max(...weeklyEnrollments.map((d) => d.count)) : 0;
 
   return (
@@ -123,6 +163,12 @@ const AdminDashboard = () => {
                 Enrollments
               </Link>
             </Button>
+            <Button variant="secondary" size="sm" asChild>
+              <Link to="/admin/instructors">
+                <GraduationCap className="h-4 w-4" />
+                Manage Instructors
+              </Link>
+            </Button>
           </motion.div>
 
           {/* Stats Cards */}
@@ -144,6 +190,16 @@ const AdminDashboard = () => {
               </div>
               <p className="text-2xl font-bold text-foreground">{analyticsData.totalStudents.toLocaleString()}</p>
               <p className="text-sm text-muted-foreground">Total Students</p>
+            </Card>
+
+            <Card variant="elevated" className="p-5">
+              <div className="flex items-center justify-between mb-3">
+                <div className="p-2 rounded-lg bg-purple-500/10">
+                  <BookOpen className="h-5 w-5 text-purple-500" />
+                </div>
+              </div>
+              <p className="text-2xl font-bold text-foreground">{analyticsData.categories.length}</p>
+              <p className="text-sm text-muted-foreground">Total Categories</p>
             </Card>
 
             <Card variant="elevated" className="p-5">
@@ -186,6 +242,20 @@ const AdminDashboard = () => {
               </div>
               <p className="text-2xl font-bold text-foreground">{analyticsData.totalEnrollments.toLocaleString()}</p>
               <p className="text-sm text-muted-foreground">Total Enrollments</p>
+            </Card>
+
+            <Card variant="elevated" className="p-5">
+              <div className="flex items-center justify-between mb-3">
+                <div className="p-2 rounded-lg bg-info/10">
+                  <GraduationCap className="h-5 w-5 text-info" />
+                </div>
+                <Badge variant="success" className="text-xs">
+                  <ArrowUpRight className="h-3 w-3 mr-1" />
+                  {analyticsData.instructorGrowth}%
+                </Badge>
+              </div>
+              <p className="text-2xl font-bold text-foreground">{analyticsData.totalInstructors.toLocaleString()}</p>
+              <p className="text-sm text-muted-foreground">Total Instructors</p>
             </Card>
           </motion.div>
 
@@ -284,6 +354,30 @@ const AdminDashboard = () => {
                             </p>
                           </div>
                         </div>
+                      ))
+                    )}
+                  </div>
+                </Card>
+              </motion.div>
+
+              {/* Categories List */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.7 }}
+              >
+                <Card variant="elevated" className="p-5">
+                  <h3 className="font-heading font-semibold text-foreground mb-4">
+                    Categories
+                  </h3>
+                  <div className="space-y-2">
+                    {analyticsData.categories.length === 0 ? (
+                      <p className="text-sm text-muted-foreground">No categories found.</p>
+                    ) : (
+                      analyticsData.categories.map((category, index) => (
+                        <Badge key={index} variant="secondary" className="mr-2">
+                          {category}
+                        </Badge>
                       ))
                     )}
                   </div>

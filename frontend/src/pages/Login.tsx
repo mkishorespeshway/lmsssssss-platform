@@ -42,7 +42,11 @@ const Login = () => {
         setIsError(false);
         console.log("User logged in:", data.user);
         login(data.user); // Store user data in AuthContext
-        navigate("/dashboard"); // Redirect to dashboard
+        if (data.user.role === "admin") {
+          navigate("/admin/dashboard"); // Redirect to admin dashboard
+        } else {
+          navigate("/dashboard"); // Redirect to student dashboard
+        }
       } else {
         setMessage(data.message || "Login failed.");
         setIsError(true);

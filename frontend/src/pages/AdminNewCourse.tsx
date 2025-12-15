@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -12,14 +12,15 @@ import { motion } from "framer-motion";
 import { toast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-// Mock instructors data
-const instructors = [
-  { id: "1", name: "Sarah Johnson", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=face", expertise: "Web Development" },
-  { id: "2", name: "Dr. Michael Chen", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face", expertise: "Data Science" },
-  { id: "3", name: "Emma Williams", avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face", expertise: "UI/UX Design" },
-  { id: "4", name: "David Park", avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face", expertise: "Mobile Development" },
-  { id: "5", name: "Lisa Anderson", avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=face", expertise: "Digital Marketing" },
-];
+
+
+interface Instructor {
+  _id: string;
+  name: string;
+  title: string;
+  category: string;
+  image: string;
+}
 
 interface Lesson {
   id: string;
@@ -45,6 +46,33 @@ const AdminNewCourse = () => {
     thumbnailUrl: "",
     instructorId: "",
   });
+  const [instructors, setInstructors] = useState<Instructor[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchInstructors = async () => {
+      try {
+        const response = await fetch("/api/instructors");
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        setInstructors(data);
+      } catch (err: any) {
+        setError(err.message);
+        toast({
+          title: "Error fetching instructors",
+          description: err.message,
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchInstructors();
+  }, []);
   
   const [sections, setSections] = useState<Section[]>([
     { id: "1", title: "Getting Started", lessons: [{ id: "1-1", title: "", duration: "", videoUrl: "" }] },
@@ -99,7 +127,23 @@ const AdminNewCourse = () => {
     navigate("/admin/courses");
   };
 
-  const selectedInstructor = instructors.find((i) => i.id === courseData.instructorId);
+  const selectedInstructor = instructors.find((i) => i._id === courseData.instructorId);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p>Loading instructors...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-destructive">Error: {error}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -179,11 +223,11 @@ const AdminNewCourse = () => {
                       </SelectTrigger>
                       <SelectContent>
                         {instructors.map((instructor) => (
-                          <SelectItem key={instructor.id} value={instructor.id}>
+                          <SelectItem key={instructor._id} value={instructor._id}>
                             <div className="flex items-center gap-2">
-                              <img src={instructor.avatar} alt={instructor.name} className="w-6 h-6 rounded-full object-cover" />
+                              <img src={instructor.image} alt={instructor.name} className="w-6 h-6 rounded-full object-cover" />
                               <span>{instructor.name}</span>
-                              <span className="text-muted-foreground">- {instructor.expertise}</span>
+                              <span className="text-muted-foreground">- {instructor.category}</span>
                             </div>
                           </SelectItem>
                         ))}
@@ -193,10 +237,10 @@ const AdminNewCourse = () => {
                   
                   {selectedInstructor && (
                     <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg">
-                      <img src={selectedInstructor.avatar} alt={selectedInstructor.name} className="w-16 h-16 rounded-full object-cover" />
+                      <img src={selectedInstructor.image} alt={selectedInstructor.name} className="w-16 h-16 rounded-full object-cover" />
                       <div>
                         <p className="font-semibold text-foreground">{selectedInstructor.name}</p>
-                        <p className="text-sm text-muted-foreground">{selectedInstructor.expertise}</p>
+                        <p className="text-sm text-muted-foreground">{selectedInstructor.category}</p>
                       </div>
                     </div>
                   )}

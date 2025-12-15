@@ -1,13 +1,13 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 @import "@fontsource/plus-jakarta-sans/400.css";
 @import "@fontsource/plus-jakarta-sans/500.css";
 @import "@fontsource/plus-jakarta-sans/600.css";
 @import "@fontsource/plus-jakarta-sans/700.css";
 @import "@fontsource/inter/400.css";
 @import "@fontsource/inter/500.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 /* LMS Design System - Modern Educational Theme */
 
@@ -50,6 +50,10 @@
     /* Warning */
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
+
+    /* Info */
+    --info: 210 90% 50%;
+    --info-foreground: 0 0% 100%;
 
     /* UI Elements */
     --border: 210 20% 90%;
@@ -121,6 +125,10 @@
     /* Warning */
     --warning: 38 92% 50%;
     --warning-foreground: 220 25% 6%;
+
+    /* Info */
+    --info: 210 70% 60%;
+    --info-foreground: 0 0% 100%;
 
     /* UI Elements */
     --border: 220 20% 18%;
