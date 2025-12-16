@@ -256,7 +256,7 @@ const AdminInstructorVideos = () => {
                 {instructor.levelVideos[instructor.level].videos.map((video, index) => (
                   <Card key={index} className="p-4 flex flex-col space-y-3">
                     <Video className="h-12 w-12 text-primary" />
-                    <h3 className="font-semibold text-lg">{video.title}</h3>
+                    <h3 className="font-semibold text-lg">Lesson {index + 1}: {video.title}</h3>
                     <p className="text-sm text-muted-foreground flex-1">{video.description}</p>
                     <div className="flex justify-end gap-2">
                       <Button variant="destructive" size="sm" onClick={() => handleDeleteVideo(index)}>

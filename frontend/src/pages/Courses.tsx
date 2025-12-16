@@ -6,27 +6,63 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Search, Filter, Grid3X3, List, ChevronDown } from "lucide-react";
 import { motion } from "framer-motion";
-import { useState } from "react";
-
-const allCourses: Course[] = [];
-
-const categories = [
-  "All",
-  "Web Development",
-  "Data Science",
-  "Design",
-  "Marketing",
-  "Cloud Computing",
-  "Mobile Development",
-  "Cybersecurity",
-  "Programming",
-];
+import { useState, useEffect } from "react";
 
 const Courses = () => {
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
 
-  const filteredCourses = allCourses.filter((course) => {
+  useEffect(() => {
+    const fetchCoursesAndCategories = async () => {
+      try {
+        const [coursesResponse, categoriesResponse] = await Promise.all([
+          fetch("/api/courses").then(res => {
+            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+            return res.json();
+          }),
+          fetch("/api/categories").then(res => {
+            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+            return res.json();
+          })
+        ]);
+        setCourses(coursesResponse);
+        // Assuming categories API returns an array of objects with a 'name' field
+        setCategories(["All", ...categoriesResponse.map((cat: { name: string }) => cat.name)]);
+      } catch (err: unknown) {
+        let errorMessage = "An unknown error occurred while fetching data";
+        if (err instanceof Error) {
+          errorMessage = err.message;
+        }
+        setError(errorMessage);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCoursesAndCategories();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p>Loading courses...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-destructive">Error: {error}</p>
+      </div>
+    );
+  }
+
+  const filteredCourses = courses.filter((course) => {
     const matchesSearch =
       course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       course.description.toLowerCase().includes(searchQuery.toLowerCase());
@@ -121,7 +157,7 @@ const Courses = () => {
           {filteredCourses.length > 0 ? (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
               {filteredCourses.map((course, index) => (
-                <CourseCard key={course.id} course={course} index={index} />
+                <CourseCard key={course._id} course={course} index={index} />
               ))}
             </div>
           ) : (

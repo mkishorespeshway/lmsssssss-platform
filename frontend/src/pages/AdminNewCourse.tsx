@@ -10,7 +10,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, Upload, Plus, Trash2, GripVertical, Save, Eye, Video, Image, User } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "@/hooks/use-toast";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectValue, SelectTrigger } from "@/components/ui/select";
+import { getVideoPlatform, getYouTubeVideoId, getVimeoVideoId, fetchYouTubeVideoDuration, fetchVimeoVideoDuration } from "@/lib/videoUtils";
 
 
 
@@ -46,6 +47,7 @@ interface Lesson {
   videoTitle: string;
   duration: string;
   videoUrl: string;
+  description: string;
 }
 
 interface Section {
@@ -58,16 +60,11 @@ const AdminNewCourse = () => {
   const navigate = useNavigate();
   const [courseData, setCourseData] = useState({
     title: "",
-    description: "",
     category: "",
     level: "",
     price: "",
     thumbnailUrl: "",
     instructorId: "",
-    videoDuration: "",
-    videoTitles: [],
-    videoDescriptions: [],
-    videoUrls: [],
   });
   const [instructors, setInstructors] = useState<Instructor[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
@@ -130,19 +127,76 @@ const AdminNewCourse = () => {
   }, []);
   
   const [sections, setSections] = useState<Section[]>([
-    { id: "1", title: "Getting Started", lessons: [{ id: "1-1", videoTitle: "", duration: "", videoUrl: "" }] },
+    { id: "1", title: "Getting Started", lessons: [{ id: "1-1", videoTitle: "", duration: "", videoUrl: "", description: "" }] },
   ]);
+
+  useEffect(() => {
+    const selectedInstructor = instructors.find((i) => i._id === courseData.instructorId);
+    if (selectedInstructor && courseData.level) {
+      const selectedLevelVideos = selectedInstructor.levelVideos[courseData.level];
+      if (selectedLevelVideos && selectedLevelVideos.videos.length > 0) {
+        const newLessons = selectedLevelVideos.videos.map((video, index) => ({
+          id: `1-${index + 1}`,
+          videoTitle: video.title,
+          duration: selectedLevelVideos.videoDuration,
+          videoUrl: video.url,
+          description: video.description,
+        }));
+
+        setSections(prevSections => {
+          const updatedSections = [...prevSections];
+          if (updatedSections.length > 0) {
+            updatedSections[0] = {
+              ...updatedSections[0],
+              lessons: newLessons,
+            };
+          } else {
+            updatedSections.push({
+              id: "1",
+              title: "Getting Started",
+              lessons: newLessons,
+            });
+          }
+          return updatedSections;
+        });
+
+        // Set course title from the first video
+        if (newLessons.length > 0) {
+          setCourseData(prevCourseData => ({
+            ...prevCourseData,
+            title: newLessons[0].videoTitle,
+          }));
+        }
+      } else {
+        setSections(prevSections => {
+          const updatedSections = [...prevSections];
+          if (updatedSections.length > 0) {
+            updatedSections[0] = {
+              ...updatedSections[0],
+              lessons: [],
+            };
+          }
+          return updatedSections;
+        });
+      }
+    } else {
+      // If no instructor or level is selected, clear all lessons
+      setSections([
+        { id: "1", title: "Getting Started", lessons: [{ id: "1-1", videoTitle: "", duration: "", videoUrl: "", description: "" }] },
+      ]);
+    }
+  }, [courseData.instructorId, courseData.level, instructors]);
 
   const addSection = () => {
     const newId = (sections.length + 1).toString();
-    setSections([...sections, { id: newId, title: "", lessons: [{ id: `${newId}-1`, videoTitle: "", duration: "", videoUrl: "" }] }]);
+    setSections([...sections, { id: newId, title: "", lessons: [{ id: `${newId}-1`, videoTitle: "", duration: "", videoUrl: "", description: "" }] }]);
   };
 
   const addLesson = (sectionId: string) => {
     setSections(sections.map((s) => {
       if (s.id === sectionId) {
         const newLessonId = `${sectionId}-${s.lessons.length + 1}`;
-        return { ...s, lessons: [...s.lessons, { id: newLessonId, videoTitle: "", duration: "", videoUrl: "" }] };
+        return { ...s, lessons: [...s.lessons, { id: newLessonId, videoTitle: "", duration: "", videoUrl: "", description: "" }] };
       }
       return s;
     }));
@@ -163,12 +217,31 @@ const AdminNewCourse = () => {
     }));
   };
 
-  const updateLesson = (sectionIndex: number, lessonIndex: number, field: "videoTitle" | "duration" | "videoUrl", value: string) => {
+  const updateLesson = async (sectionIndex: number, lessonIndex: number, field: "videoTitle" | "duration" | "videoUrl" | "description", value: string) => {
     const updated = [...sections];
-    updated[sectionIndex].lessons[lessonIndex] = {
-      ...updated[sectionIndex].lessons[lessonIndex],
-      [field]: value,
-    };
+    const currentLesson = updated[sectionIndex].lessons[lessonIndex];
+
+    if (field === "videoUrl") {
+      currentLesson.videoUrl = value;
+      const platform = getVideoPlatform(value);
+      let duration = "";
+
+      if (platform === "youtube") {
+        const videoId = getYouTubeVideoId(value);
+        if (videoId) {
+          duration = await fetchYouTubeVideoDuration(videoId) || "";
+        }
+      } else if (platform === "vimeo") {
+        const videoId = getVimeoVideoId(value);
+        if (videoId) {
+          duration = await fetchVimeoVideoDuration(videoId) || "";
+        }
+      }
+      currentLesson.duration = duration;
+    } else {
+      currentLesson[field] = value;
+    }
+
     setSections(updated);
   };
 
@@ -229,10 +302,7 @@ const AdminNewCourse = () => {
                     <Label htmlFor="title">Course Title</Label>
                     <Input id="title" placeholder="e.g., Complete Web Development Bootcamp" value={courseData.title} onChange={(e) => setCourseData({ ...courseData, title: e.target.value })} required />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="description">Description</Label>
-                    <Textarea id="description" placeholder="Describe what students will learn..." rows={4} value={courseData.description} onChange={(e) => setCourseData({ ...courseData, description: e.target.value })} required />
-                  </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="category">Category</Label>
@@ -292,31 +362,7 @@ const AdminNewCourse = () => {
                           ...courseData,
                           instructorId: value,
                           level: selected.level,
-                          title: selected.title,
-                          description: selectedLevelVideos?.videos[0]?.description || "",
-                          videoDuration: selectedLevelVideos?.videoDuration || "",
-                          videoTitles: selectedLevelVideos?.videos.map(video => video.title) || [],
-                          videoDescriptions: selectedLevelVideos?.videos.map(video => video.description) || [],
-                          videoUrls: selectedLevelVideos?.videos.map(video => video.url) || [],
                         });
-
-                        if (selectedLevelVideos && selectedLevelVideos.videos.length > 0) {
-                          const updatedSections = sections.map((section, sIndex) => {
-                            return {
-                              ...section,
-                              lessons: section.lessons.map((lesson, lIndex) => {
-                                const videoIndex = sIndex * section.lessons.length + lIndex;
-                                return {
-                                  ...lesson,
-                                  videoTitle: selectedLevelVideos.videos[videoIndex]?.title || "",
-                                  duration: selectedLevelVideos.videoDuration || "",
-                                  videoUrl: selectedLevelVideos.videos[videoIndex]?.url || "",
-                                };
-                              }),
-                            };
-                          });
-                          setSections(updatedSections);
-                        }
                       }
                     }}>
                       <SelectTrigger>
@@ -455,6 +501,15 @@ const AdminNewCourse = () => {
                                 placeholder="Video URL (e.g., https://youtube.com/watch?v=...)" 
                                 value={lesson.videoUrl} 
                                 onChange={(e) => updateLesson(sIndex, lIndex, "videoUrl", e.target.value)} 
+                                className="flex-1" 
+                              />
+                            </div>
+                            <div className="flex items-center gap-2 ml-6">
+                              <Video className="h-4 w-4 text-muted-foreground" />
+                              <Input 
+                                placeholder="Video Description" 
+                                value={lesson.description} 
+                                onChange={(e) => updateLesson(sIndex, lIndex, "description", e.target.value)} 
                                 className="flex-1" 
                               />
                             </div>

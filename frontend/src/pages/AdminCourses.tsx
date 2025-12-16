@@ -20,7 +20,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -36,81 +36,68 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-const courses = [
-  {
-    id: "1",
-    title: "Complete Web Development Bootcamp 2024",
-    category: "Web Development",
-    instructor: "Sarah Johnson",
-    students: 45230,
-    rating: 4.9,
-    price: 89,
-    status: "Published",
-    createdAt: "2024-01-15",
-    thumbnail: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=80&h=45&fit=crop",
-  },
-  {
-    id: "2",
-    title: "Data Science & Machine Learning with Python",
-    category: "Data Science",
-    instructor: "Dr. Michael Chen",
-    students: 32150,
-    rating: 4.8,
-    price: 129,
-    status: "Published",
-    createdAt: "2024-02-20",
-    thumbnail: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=80&h=45&fit=crop",
-  },
-  {
-    id: "3",
-    title: "UI/UX Design Masterclass",
-    category: "Design",
-    instructor: "Emma Williams",
-    students: 28450,
-    rating: 4.9,
-    price: 79,
-    status: "Published",
-    createdAt: "2024-03-10",
-    thumbnail: "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=80&h=45&fit=crop",
-  },
-  {
-    id: "4",
-    title: "Advanced React & TypeScript",
-    category: "Web Development",
-    instructor: "Alex Turner",
-    students: 18920,
-    rating: 4.7,
-    price: 99,
-    status: "Draft",
-    createdAt: "2024-04-05",
-    thumbnail: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=80&h=45&fit=crop",
-  },
-  {
-    id: "5",
-    title: "Digital Marketing Fundamentals",
-    category: "Marketing",
-    instructor: "Lisa Martinez",
-    students: 21340,
-    rating: 4.6,
-    price: 69,
-    status: "Published",
-    createdAt: "2024-04-20",
-    thumbnail: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=80&h=45&fit=crop",
-  },
-];
-
-const statusColors = {
-  Published: "success",
-  Draft: "secondary",
-  Archived: "muted",
-} as const;
-
 const AdminCourses = () => {
+  const [courses, setCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const filteredCourses = courses.filter((course) =>
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const response = await fetch("/api/courses"); // Assuming your API endpoint for courses is /api/courses
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        setCourses(data);
+      } catch (error: unknown) {
+        let errorMessage = "An unknown error occurred";
+        if (error instanceof Error) {
+          errorMessage = error.message;
+        }
+        setError(errorMessage);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCourses();
+  }, []);
+
+  const filteredCourses = courses.filter((course: any) =>
     course.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const statusColors = {
+    Published: "success",
+    Draft: "secondary",
+    Archived: "muted",
+  } as const;
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p>Loading courses...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-destructive">Error: {error}</p>
+      </div>
+    );
+  }
+
+  if (courses.length === 0 && !loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p>No courses found.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -270,7 +257,7 @@ const AdminCourses = () => {
                   Showing 1-{filteredCourses.length} of {filteredCourses.length} courses
                 </p>
                 <div className="flex items-center gap-2">
-                  <Button variant="outline" size="icon" disabled>
+                  <Button variant="outline" size="icon">
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
                   <Button variant="outline" size="sm">1</Button>

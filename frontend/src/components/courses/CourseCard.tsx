@@ -6,7 +6,7 @@ import { Clock, Users, Star, BookOpen, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 
 export interface Course {
-  id: string;
+  _id: string;
   title: string;
   description: string;
   thumbnail: string;
@@ -85,7 +85,7 @@ export function CourseCard({ course, index = 0 }: CourseCardProps) {
 
           {/* Title */}
           <h3 className="font-heading font-semibold text-lg text-foreground mb-2 line-clamp-2 group-hover:text-primary transition-colors">
-            <Link to={`/courses/${course.id}`}>{course.title}</Link>
+            <Link to={`/courses/${course._id}`}>{course.title}</Link>
           </h3>
 
           {/* Description */}
@@ -124,7 +124,7 @@ export function CourseCard({ course, index = 0 }: CourseCardProps) {
               )}
             </div>
             <Button variant="default" size="sm" asChild>
-              <Link to={`/courses/${course.id}`}>
+              <Link to={`/courses/${course._id}`}>
                 Enroll Now
                 <ArrowRight className="h-4 w-4" />
               </Link>
