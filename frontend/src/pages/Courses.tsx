@@ -19,19 +19,37 @@ const Courses = () => {
   useEffect(() => {
     const fetchCoursesAndCategories = async () => {
       try {
-        const [coursesResponse, categoriesResponse] = await Promise.all([
-          fetch("/api/courses").then(res => {
-            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-            return res.json();
-          }),
-          fetch("/api/categories").then(res => {
-            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-            return res.json();
-          })
-        ]);
-        setCourses(coursesResponse);
-        // Assuming categories API returns an array of objects with a 'name' field
-        setCategories(["All", ...categoriesResponse.map((cat: { name: string }) => cat.name)]);
+        const response = await fetch("/api/instructors");
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const instructorsData = await response.json();
+
+        const extractedCourses: Course[] = instructorsData.map((instructor: any) => ({
+          _id: instructor._id || instructor.id || `${instructor.instructor}-${instructor.title}`, // Fallback for _id
+          title: instructor.title,
+          description: `A course by ${instructor.instructor} on ${instructor.title}.`, // Placeholder description
+          thumbnail: "https://via.placeholder.com/150", // Placeholder thumbnail
+          category: instructor.category,
+          instructor: instructor.instructor,
+          duration: "10h 30m", // Placeholder
+          lessons: 10, // Placeholder
+          students: 100, // Placeholder
+          rating: 4.5, // Placeholder
+          level: instructor.level || "Beginner", // Use instructor level or default
+          price: 0, // Placeholder
+          isFeatured: false, // Placeholder
+        }));
+
+        const uniqueCategories = new Set<string>();
+        instructorsData.forEach((instructor: any) => {
+          if (instructor.category) {
+            uniqueCategories.add(instructor.category);
+          }
+        });
+
+        setCourses(extractedCourses);
+        setCategories(["All", ...Array.from(uniqueCategories)]);
       } catch (err: unknown) {
         let errorMessage = "An unknown error occurred while fetching data";
         if (err instanceof Error) {
