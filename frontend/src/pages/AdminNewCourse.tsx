@@ -160,11 +160,11 @@ const AdminNewCourse = () => {
           return updatedSections;
         });
 
-        // Set course title from the first video
-        if (newLessons.length > 0) {
+        // Set course title from the instructor's title
+        if (selectedInstructor) {
           setCourseData(prevCourseData => ({
             ...prevCourseData,
-            title: newLessons[0].videoTitle,
+            title: selectedInstructor.title,
           }));
         }
       } else {

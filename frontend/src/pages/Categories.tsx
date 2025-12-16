@@ -37,12 +37,36 @@ const Categories = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await fetch("/api/categories"); // Assuming your API endpoint for categories is /api/categories
+        const response = await fetch("/api/instructors");
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-        const data = await response.json();
-        setCategories(data);
+        const instructorsData = await response.json();
+
+        const categoriesMap = new Map<string, { name: string, courseCount: number }>();
+
+        instructorsData.forEach((instructor: any) => {
+          // Assuming the category is directly on the instructor object as 'category'
+          const categoryName = instructor.category; 
+          if (categoryName) {
+            if (categoriesMap.has(categoryName)) {
+              categoriesMap.get(categoryName)!.courseCount++;
+            } else {
+              categoriesMap.set(categoryName, { name: categoryName, courseCount: 1 });
+            }
+          }
+        });
+
+        const extractedCategories: Category[] = Array.from(categoriesMap.values()).map(cat => ({
+          _id: cat.name, // Using name as _id for simplicity
+          name: cat.name,
+          description: `Explore courses in ${cat.name}.`, // Placeholder description
+          icon: "Code", // Default icon, can be improved if category-icon mapping is available
+          courseCount: cat.courseCount,
+          color: "from-blue-500 to-blue-700", // Default color, can be improved
+        }));
+
+        setCategories(extractedCategories);
       } catch (error: unknown) {
         let errorMessage = "An unknown error occurred";
         if (error instanceof Error) {
