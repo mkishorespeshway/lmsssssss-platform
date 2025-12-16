@@ -12,6 +12,9 @@ export interface Course {
   thumbnail: string;
   category: string;
   instructor: string;
+  instructorTitle?: string;
+  instructorImage?: string;
+  instructorCourses?: number;
   duration: string;
   lessons: number;
   students: number;
@@ -94,23 +97,33 @@ export function CourseCard({ course, index = 0 }: CourseCardProps) {
           </p>
 
           {/* Instructor */}
-          <p className="text-sm text-muted-foreground mb-4">
-            By <span className="text-foreground font-medium">{course.instructor}</span>
-          </p>
+          <div className="flex items-center gap-3 mb-4">
+            <img
+              src={course.instructorImage}
+              alt={course.instructor}
+              className="w-10 h-10 rounded-full object-cover"
+            />
+            <div>
+              <p className="text-sm font-medium text-foreground">{course.instructor}</p>
+              {course.instructorTitle && (
+                <p className="text-xs text-muted-foreground">{course.instructorTitle}</p>
+              )}
+            </div>
+          </div>
 
           {/* Stats */}
           <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
-            <div className="flex items-center gap-1">
-              <BookOpen className="h-4 w-4" />
-              <span>{course.lessons} lessons</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Users className="h-4 w-4" />
-              <span>{course.students.toLocaleString()}</span>
-            </div>
             <div className="flex items-center gap-1 text-warning">
               <Star className="h-4 w-4 fill-current" />
               <span className="text-foreground font-medium">{course.rating}</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Users className="h-4 w-4" />
+              <span>{course.students.toLocaleString()} students</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <BookOpen className="h-4 w-4" />
+              <span>{course.instructorCourses} courses</span>
             </div>
           </div>
 

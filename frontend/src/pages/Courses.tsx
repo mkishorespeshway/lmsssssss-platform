@@ -25,30 +25,49 @@ const Courses = () => {
         }
         const instructorsData = await response.json();
 
-        const extractedCourses: Course[] = instructorsData.map((instructor: any) => ({
-          _id: instructor._id || instructor.id || `${instructor.instructor}-${instructor.title}`, // Fallback for _id
-          title: instructor.title,
-          description: `A course by ${instructor.instructor} on ${instructor.title}.`, // Placeholder description
-          thumbnail: "https://via.placeholder.com/150", // Placeholder thumbnail
-          category: instructor.category,
-          instructor: instructor.instructor,
-          duration: "10h 30m", // Placeholder
-          lessons: 10, // Placeholder
-          students: 100, // Placeholder
-          rating: 4.5, // Placeholder
-          level: instructor.level || "Beginner", // Use instructor level or default
-          price: 0, // Placeholder
-          isFeatured: false, // Placeholder
-        }));
-
+        const allCourses: Course[] = [];
         const uniqueCategories = new Set<string>();
+
         instructorsData.forEach((instructor: any) => {
           if (instructor.category) {
             uniqueCategories.add(instructor.category);
           }
+
+          const instructorTotalCourses = Object.values(instructor.levelVideos || {}).reduce(
+            (sum: number, level: { videos?: any[] }) => sum + (level.videos ? level.videos.length : 0),
+            0
+          );
+
+          for (const levelKey in instructor.levelVideos) {
+            if (Object.prototype.hasOwnProperty.call(instructor.levelVideos, levelKey)) {
+              const levelData = instructor.levelVideos[levelKey];
+              if (levelData && levelData.videos) {
+                levelData.videos.forEach((video: any) => {
+                  allCourses.push({
+                    _id: video._id,
+                    title: video.title,
+                    description: video.description,
+                    thumbnail: instructor.image || "https://via.placeholder.com/150", // Use instructor image as thumbnail
+                    category: instructor.category,
+                    instructor: instructor.name,
+                    instructorTitle: instructor.title, // Use instructor's main title
+                    instructorImage: instructor.image || "https://via.placeholder.com/40",
+                    instructorCourses: instructorTotalCourses as number,
+                    duration: levelData.videoDuration || "N/A",
+                    lessons: (levelData.videos ? levelData.videos.length : 0) as number, // Number of videos in this specific level
+                    students: instructor.students || 0, // Use instructor's student count
+                    rating: instructor.rating || 0, // Use instructor's rating
+                    level: levelKey as "Beginner" | "Intermediate" | "Advanced", // The level of the course
+                    price: 0, // Placeholder
+                    isFeatured: false, // Placeholder
+                  });
+                });
+              }
+            }
+          }
         });
 
-        setCourses(extractedCourses);
+        setCourses(allCourses);
         setCategories(["All", ...Array.from(uniqueCategories)]);
       } catch (err: unknown) {
         let errorMessage = "An unknown error occurred while fetching data";
