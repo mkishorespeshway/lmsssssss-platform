@@ -50,6 +50,8 @@ const AdminInstructorVideos = () => {
   });
 
   const [videoDuration, setVideoDuration] = useState<string>('');
+  const [editingVideoIndex, setEditingVideoIndex] = useState<number | null>(null);
+  const [editedVideoData, setEditedVideoData] = useState<Video | null>(null);
 
   useEffect(() => {
     fetchInstructorDetails();
@@ -169,6 +171,62 @@ const AdminInstructorVideos = () => {
     }
   };
 
+  const handleEditVideo = (video: Video, index: number) => {
+    setEditingVideoIndex(index);
+    setEditedVideoData({ ...video });
+  };
+
+  const handleSaveVideo = async (videoIndex: number) => {
+    if (!instructor || !editedVideoData) {
+      toast({ title: "No video data to save", variant: "destructive" });
+      return;
+    }
+
+    const currentLevel = instructor.level;
+    const currentInstructorLevelVideos = instructor.levelVideos || {
+      Beginner: { videos: [], videoDuration: "" },
+      Intermediate: { videos: [], videoDuration: "" },
+      Advanced: { videos: [], videoDuration: "" },
+    };
+    const currentLevelVideos = currentInstructorLevelVideos[currentLevel]?.videos || [];
+    const currentLevelVideoDuration = currentInstructorLevelVideos[currentLevel]?.videoDuration || "";
+
+    const updatedVideos = currentLevelVideos.map((video, i) =>
+      i === videoIndex ? editedVideoData : video
+    );
+
+    const updatedLevelVideos = {
+      ...currentInstructorLevelVideos,
+      [currentLevel]: {
+        videos: updatedVideos,
+        videoDuration: currentLevelVideoDuration,
+      },
+    };
+
+    try {
+      const response = await fetch(`/api/instructors/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ levelVideos: updatedLevelVideos }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      toast({ title: "Video updated successfully" });
+      setEditingVideoIndex(null);
+      setEditedVideoData(null);
+      fetchInstructorDetails();
+    } catch (error: unknown) {
+      let errorMessage = "An unknown error occurred";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      toast({ title: "Error updating video", description: errorMessage, variant: "destructive" });
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -255,14 +313,59 @@ const AdminInstructorVideos = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {instructor.levelVideos[instructor.level].videos.map((video, index) => (
                   <Card key={index} className="p-4 flex flex-col space-y-3">
-                    <Video className="h-12 w-12 text-primary" />
-                    <h3 className="font-semibold text-lg">Lesson {index + 1}: {video.title}</h3>
-                    <p className="text-sm text-muted-foreground flex-1">{video.description}</p>
-                    <div className="flex justify-end gap-2">
-                      <Button variant="destructive" size="sm" onClick={() => handleDeleteVideo(index)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
+                    {editingVideoIndex === index ? (
+                      <div className="space-y-3">
+                        <div>
+                          <Label htmlFor={`edit-title-${index}`}>Title</Label>
+                          <Input
+                            id={`edit-title-${index}`}
+                            value={editedVideoData?.title || ''}
+                            onChange={(e) => setEditedVideoData(prev => prev ? { ...prev, title: e.target.value } : null)}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor={`edit-description-${index}`}>Description</Label>
+                          <Input
+                            id={`edit-description-${index}`}
+                            value={editedVideoData?.description || ''}
+                            onChange={(e) => setEditedVideoData(prev => prev ? { ...prev, description: e.target.value } : null)}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor={`edit-url-${index}`}>URL</Label>
+                          <Input
+                            id={`edit-url-${index}`}
+                            value={editedVideoData?.url || ''}
+                            onChange={(e) => setEditedVideoData(prev => prev ? { ...prev, url: e.target.value } : null)}
+                          />
+                        </div>
+                        <div className="flex justify-end gap-2">
+                          <Button variant="outline" size="sm" onClick={() => {
+                            setEditingVideoIndex(null);
+                            setEditedVideoData(null);
+                          }}>
+                            Cancel
+                          </Button>
+                          <Button size="sm" onClick={() => handleSaveVideo(index)}>
+                            Save
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <Video className="h-12 w-12 text-primary" />
+                        <h3 className="font-semibold text-lg">Lesson {index + 1}: {video.title}</h3>
+                        <p className="text-sm text-muted-foreground flex-1">{video.description}</p>
+                        <div className="flex justify-end gap-2">
+                          <Button variant="outline" size="sm" onClick={() => handleEditVideo(video, index)}>
+                            Edit
+                          </Button>
+                          <Button variant="destructive" size="sm" onClick={() => handleDeleteVideo(index)}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </>
+                    )}
                   </Card>
                 ))}
               </div>

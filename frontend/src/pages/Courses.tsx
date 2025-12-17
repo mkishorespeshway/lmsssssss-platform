@@ -27,6 +27,7 @@ const Courses = () => {
 
         const allCourses: Course[] = [];
         const uniqueCategories = new Set<string>();
+        const groupedCoursesMap = new Map<string, Course>();
 
         instructorsData.forEach((instructor: any) => {
           if (instructor.category) {
@@ -41,33 +42,39 @@ const Courses = () => {
           for (const levelKey in instructor.levelVideos) {
             if (Object.prototype.hasOwnProperty.call(instructor.levelVideos, levelKey)) {
               const levelData = instructor.levelVideos[levelKey];
-              if (levelData && levelData.videos) {
-                levelData.videos.forEach((video: any) => {
-                  allCourses.push({
-                    _id: video._id,
-                    title: video.title,
-                    description: video.description,
-                    thumbnail: instructor.image || "https://via.placeholder.com/150", // Use instructor image as thumbnail
+              if (levelData && levelData.videos && levelData.videos.length > 0) {
+                const courseKey = `${instructor._id}-${levelKey}`;
+                if (groupedCoursesMap.has(courseKey)) {
+                  // If course already exists, just update video count
+                  const existingCourse = groupedCoursesMap.get(courseKey)!;
+                  existingCourse.videoCount! += levelData.videos.length;
+                } else {
+                  // Create a new course entry for this level and instructor
+                  groupedCoursesMap.set(courseKey, {
+                    _id: levelData.videos[0]._id, // Use the first video's ID as a placeholder for the course ID
+                    title: `${instructor.name}'s ${levelKey} Course`, // Generate a title
+                    description: `A ${levelKey} level course by ${instructor.name} covering various topics.`, // Generate a description
+                    thumbnail: instructor.image || "https://via.placeholder.com/150",
                     category: instructor.category,
                     instructor: instructor.name,
-                    instructorTitle: instructor.title, // Use instructor's main title
+                    instructorTitle: instructor.title,
                     instructorImage: instructor.image || "https://via.placeholder.com/40",
                     instructorCourses: instructorTotalCourses as number,
                     duration: levelData.videoDuration || "N/A",
-                    lessons: (levelData.videos ? levelData.videos.length : 0) as number, // Number of videos in this specific level
-                    students: instructor.students || 0, // Use instructor's student count
-                    rating: instructor.rating || 0, // Use instructor's rating
-                    level: levelKey as "Beginner" | "Intermediate" | "Advanced", // The level of the course
-                    price: 0, // Placeholder
-                    isFeatured: false, // Placeholder
+                    students: instructor.students || 0,
+                    rating: instructor.rating || 0,
+                    level: levelKey as "Beginner" | "Intermediate" | "Advanced",
+                    price: 0,
+                    isFeatured: false,
+                    videoCount: levelData.videos.length,
                   });
-                });
+                }
               }
             }
           }
         });
 
-        setCourses(allCourses);
+        setCourses(Array.from(groupedCoursesMap.values()));
         setCategories(["All", ...Array.from(uniqueCategories)]);
       } catch (err: unknown) {
         let errorMessage = "An unknown error occurred while fetching data";

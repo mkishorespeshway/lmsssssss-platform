@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Clock, Users, Star, BookOpen, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
+import { useAuth } from "../../context/AuthContext";
 
 export interface Course {
   _id: string;
@@ -16,12 +17,12 @@ export interface Course {
   instructorImage?: string;
   instructorCourses?: number;
   duration: string;
-  lessons: number;
   students: number;
   rating: number;
   level: "Beginner" | "Intermediate" | "Advanced";
   price: number;
   isFeatured?: boolean;
+  videoCount?: number;
 }
 
 interface CourseCardProps {
@@ -36,6 +37,7 @@ const levelColors = {
 } as const;
 
 export function CourseCard({ course, index = 0 }: CourseCardProps) {
+  const { user } = useAuth();
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -123,7 +125,7 @@ export function CourseCard({ course, index = 0 }: CourseCardProps) {
             </div>
             <div className="flex items-center gap-1">
               <BookOpen className="h-4 w-4" />
-              <span>{course.instructorCourses} courses</span>
+              <span>{course.videoCount ? `${course.videoCount} videos` : `${course.instructorCourses} courses`}</span>
             </div>
           </div>
 
@@ -136,12 +138,14 @@ export function CourseCard({ course, index = 0 }: CourseCardProps) {
                 <span className="text-lg font-bold text-foreground">${course.price}</span>
               )}
             </div>
-            <Button variant="default" size="sm" asChild>
-              <Link to={`/courses/${course._id}`}>
-                Enroll Now
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            </Button>
+            {user?.role !== "admin" && (
+              <Button variant="default" size="sm" asChild>
+                <Link to={`/courses/${course._id}`}>
+                  Enroll Now
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </Button>
+            )}
           </div>
         </div>
       </Card>
