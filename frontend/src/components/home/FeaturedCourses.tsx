@@ -38,7 +38,7 @@ export function FeaturedCourses() {
         ) : (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
             {featuredCourses.map((course, index) => (
-              <CourseCard key={course.id} course={course} index={index} />
+              <CourseCard key={course._id} course={course} index={index} />
             ))}
           </div>
         )}

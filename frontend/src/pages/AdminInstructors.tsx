@@ -4,6 +4,7 @@ import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -53,6 +54,8 @@ interface Instructor {
   category: string;
   image: string;
   level: "Beginner" | "Intermediate" | "Advanced";
+  whatYouWillLearn: string[];
+  courseContentOverview: string;
 }
 
 const AdminInstructors = () => {
@@ -61,6 +64,8 @@ const AdminInstructors = () => {
   const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentInstructor, setCurrentInstructor] = useState<Instructor | null>(null);
+  const [whatYouWillLearn, setWhatYouWillLearn] = useState<string[]>([""]);
+  const [courseContentOverview, setCourseContentOverview] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
 
@@ -90,11 +95,15 @@ const AdminInstructors = () => {
 
   const handleAddInstructor = () => {
     setCurrentInstructor(null);
+    setWhatYouWillLearn([""]);
+    setCourseContentOverview("");
     setIsModalOpen(true);
   };
 
   const handleEditInstructor = (instructor: Instructor) => {
     setCurrentInstructor(instructor);
+    setWhatYouWillLearn(instructor.whatYouWillLearn || [""]);
+    setCourseContentOverview(instructor.courseContentOverview || "");
     setIsModalOpen(true);
   };
 
@@ -126,6 +135,8 @@ const AdminInstructors = () => {
       title: formData.get("title") as string,
       category: formData.get("category") as string,
       image: formData.get("image") as string,
+      whatYouWillLearn: whatYouWillLearn.filter(point => point.trim() !== ""),
+      courseContentOverview: courseContentOverview,
     };
 
     try {
@@ -374,6 +385,64 @@ const AdminInstructors = () => {
                 className="col-span-3"
               />
             </div>
+
+            {/* What You'll Learn */}
+            <div className="grid grid-cols-4 items-start gap-4">
+              <Label htmlFor="whatYouWillLearn" className="text-right pt-2">
+                What You'll Learn
+              </Label>
+              <div className="col-span-3 space-y-2">
+                {whatYouWillLearn.map((point, index) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <Input
+                      placeholder="e.g., Build modern, responsive websites"
+                      value={point}
+                      onChange={(e) => {
+                        const updatedPoints = [...whatYouWillLearn];
+                        updatedPoints[index] = e.target.value;
+                        setWhatYouWillLearn(updatedPoints);
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => {
+                        const updatedPoints = whatYouWillLearn.filter((_, i) => i !== index);
+                        setWhatYouWillLearn(updatedPoints);
+                      }}
+                      disabled={whatYouWillLearn.length === 1}
+                    >
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  </div>
+                ))}
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setWhatYouWillLearn([...whatYouWillLearn, ""])}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Learning Point
+                </Button>
+              </div>
+            </div>
+
+            {/* Course Content Overview */}
+            <div className="grid grid-cols-4 items-start gap-4">
+              <Label htmlFor="courseContentOverview" className="text-right pt-2">
+                Course Content Overview
+              </Label>
+              <Textarea
+                id="courseContentOverview"
+                name="courseContentOverview"
+                placeholder="Provide a brief overview of the course content..."
+                value={courseContentOverview}
+                onChange={(e) => setCourseContentOverview(e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+
             <DialogFooter>
               <Button type="submit">Save changes</Button>
             </DialogFooter>
